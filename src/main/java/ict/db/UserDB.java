@@ -92,4 +92,48 @@ public class UserDB {
         }
         return isSuccess;
     }
+
+    public boolean deleteUserInfo(String id) {
+        Connection c;
+        PreparedStatement ps;
+        boolean isSuccess = false;
+        try {
+            c = getConnection();
+            String sql = "DELETE FROM USERINFO WHERE id=?";
+            ps = c.prepareStatement(sql);
+            ps.setString(1, id);
+            int row = ps.executeUpdate();
+            if (row >= 1) {
+                isSuccess = true;
+            }
+            ps.close();
+            c.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isSuccess;
+    }
+
+    public boolean updateUserInfo(String id, String user, String pwd) {
+        Connection c;
+        PreparedStatement ps;
+        boolean isSuccess = false;
+        try {
+            c = getConnection();
+            String sql = "UPDATE USERINFO SET username=?, password=? WHERE id=?";
+            ps = c.prepareStatement(sql);
+            ps.setString(1, user);
+            ps.setString(2, pwd);
+            ps.setString(3, id);
+            int row = ps.executeUpdate();
+            if (row >= 1) {
+                isSuccess = true;
+            }
+            ps.close();
+            c.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isSuccess;
+    }
 }

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import ict.bean.UserInfo;
+import ict.bean.UserBean;
 import ict.db.UserDB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,7 +44,7 @@ public class LoginController extends HttpServlet {
             try {
                 if (db.isValidUser(username, password)) {
                     HttpSession session = request.getSession();
-                    UserInfo bean = new UserInfo();
+                    UserBean bean = new UserBean();
                     bean.setUsername(username);
                     session.setAttribute("userInfo", bean);
                     targetURL = "/welcome.jsp";

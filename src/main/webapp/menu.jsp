@@ -49,8 +49,7 @@
     <body>
         <div class="menu-bar">
             <a href="welcome.jsp">Home</a>
-            <a href="brandController?action=list">Brands</a>
-            <a href="productController?action=list">Products</a>
+            <a href="brandController?action=list">Register</a>
             <div class="user-info">
                 Hello, <c:out value="${sessionScope.userInfo.username}" />
             </div>

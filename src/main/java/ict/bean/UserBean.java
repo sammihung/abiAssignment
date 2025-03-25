@@ -2,13 +2,13 @@ package ict.bean;
 
 import java.io.Serializable;
 
-public class UserInfo implements Serializable {
+public class UserBean implements Serializable {
     private String email, userId, username, password, role;
 
-    public UserInfo() {
+    public UserBean() {
     }
 
-    public UserInfo(String username, String password, String email, String userId, String role) {
+    public UserBean(String username, String password, String email, String userId, String role) {
         this.email = email;
         this.username = username;
         this.password = password;
