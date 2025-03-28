@@ -52,4 +52,13 @@ public class UserBean implements Serializable {
         this.password = password;
     }
 
+    public String toString() {
+        return "UserBean{" +
+                "email='" + email + '\'' +
+                ", userId='" + userId + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", role='" + role + '\'' +
+                '}';
+    }
 }

@@ -78,7 +78,7 @@ public class UserDB {
         boolean isSuccess = false;
         try {
             c = getConnection();
-            String sql = "INSERT INTO USERINFO (id, username, password) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO USERS (id, username, password) VALUES (?, ?, ?)";
             ps = c.prepareStatement(sql);
             ps.setString(1, id);
             ps.setString(2, user);
@@ -101,7 +101,7 @@ public class UserDB {
         boolean isSuccess = false;
         try {
             c = getConnection();
-            String sql = "DELETE FROM USERINFO WHERE id=?";
+            String sql = "DELETE FROM USERS WHERE id=?";
             ps = c.prepareStatement(sql);
             ps.setString(1, id);
             int row = ps.executeUpdate();
@@ -122,7 +122,7 @@ public class UserDB {
         boolean isSuccess = false;
         try {
             c = getConnection();
-            String sql = "UPDATE USERINFO SET username=?, password=? WHERE id=?";
+            String sql = "UPDATE USERS SET username=?, password=? WHERE id=?";
             ps = c.prepareStatement(sql);
             ps.setString(1, user);
             ps.setString(2, pwd);
@@ -149,7 +149,7 @@ public class UserDB {
                 if (rs.next()) {
                     UserBean user = new UserBean();
                     user.setUsername(rs.getString("username"));
-                    user.setEmail(rs.getString("email"));
+                    user.setEmail(rs.getString("userEmail"));
                     user.setRole(rs.getString("role"));
                     return user;
                 }

@@ -49,7 +49,23 @@
     <body>
         <div class="menu-bar">
             <a href="welcome.jsp">Home</a>
-            <a href="brandController?action=list">Register</a>
+            <c:choose>
+                <c:when
+                    test="${sessionScope.userInfo.role == 'Bakery shop staff'}">
+                    <a href="register.jsp">Register</a>
+                </c:when>
+                <c:when
+                    test="${sessionScope.userInfo.role == 'Warehouse Staff'}">
+                    <a href="register.jsp">Register</a>
+                </c:when>
+                <c:when
+                    test="${sessionScope.userInfo.role == 'Senior Management'}">
+                    <a href="manageUsers.jsp">Manage Users</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="help.jsp">Help</a>
+                </c:otherwise>
+            </c:choose>
             <div class="user-info">
                 Hello, <c:out value="${sessionScope.userInfo.username}" />
             </div>
@@ -60,3 +76,4 @@
         </div>
     </body>
 </html>
+
