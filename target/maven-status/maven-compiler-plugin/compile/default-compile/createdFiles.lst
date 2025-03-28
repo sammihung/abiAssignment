@@ -1,5 +1,5 @@
 ict\db\UserDB.class
 ict\servlet\LoginController.class
+ict\bean\UserBean.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\assignment\JakartaRestConfiguration.class
-ict\bean\UserInfo.class

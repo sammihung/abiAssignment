@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import ict.bean.UserBean;
+
 public class UserDB {
 
     String dburl, username, password;
@@ -136,4 +138,26 @@ public class UserDB {
         }
         return isSuccess;
     }
+
+    public UserBean getUser(String username, String password) throws SQLException {
+        String sql = "SELECT * FROM USERS WHERE username=? AND password=?";
+        try (Connection c = getConnection();
+                PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    UserBean user = new UserBean();
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    return user;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
