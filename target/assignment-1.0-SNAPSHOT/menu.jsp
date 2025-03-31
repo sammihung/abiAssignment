@@ -47,19 +47,17 @@
         </style>
     </head>
     <body>
+        <jsp:useBean id="userInfo" class="ict.bean.UserBean" scope="session" />
         <div class="menu-bar">
             <a href="welcome.jsp">Home</a>
             <c:choose>
-                <c:when
-                    test="${sessionScope.userInfo.role == 'Bakery shop staff'}">
+                <c:when test="${userInfo.role == 'Bakery shop staff'}">
                     <a href="register.jsp">Register</a>
                 </c:when>
-                <c:when
-                    test="${sessionScope.userInfo.role == 'Warehouse Staff'}">
+                <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="register.jsp">Register</a>
                 </c:when>
-                <c:when
-                    test="${sessionScope.userInfo.role == 'Senior Management'}">
+                <c:when test="${userInfo.role == 'Senior Management'}">
                     <a href="manageUsers.jsp">Manage Users</a>
                 </c:when>
                 <c:otherwise>
@@ -67,7 +65,7 @@
                 </c:otherwise>
             </c:choose>
             <div class="user-info">
-                Hello, <c:out value="${sessionScope.userInfo.username}" />
+                Hello, <c:out value="${userInfo.username}" />
             </div>
             <form class="logout-form" method="post" action="main">
                 <input type="hidden" name="action" value="logout" />
@@ -76,4 +74,3 @@
         </div>
     </body>
 </html>
-
