@@ -4,13 +4,12 @@ import java.io.IOException;
 
 import ict.db.WarehouseDB;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(urlPatterns = { "/login", "/main" })
+//@WebServlet(urlPatterns = { "/login", "/main" })
 public class WarehouseController extends HttpServlet {
 
     private WarehouseDB db;

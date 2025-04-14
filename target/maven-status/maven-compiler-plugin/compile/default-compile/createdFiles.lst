@@ -1,5 +1,10 @@
 ict\db\UserDB.class
 ict\servlet\LoginController.class
-ict\bean\UserBean.class
+ict\servlet\WarehouseController.class
+ict\db\BakeryShopDB.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
+ict\bean\BakeryShopBean.class
+ict\db\WarehouseDB.class
+ict\bean\UserBean.class
 ict\servlet\assignment\JakartaRestConfiguration.class
+ict\bean\WarehouseBean.class
