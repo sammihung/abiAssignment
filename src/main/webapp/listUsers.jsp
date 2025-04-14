@@ -59,12 +59,14 @@
         function toggleEditMode() {
             const table = document.getElementById("usersTable");
             const editButton = document.getElementById("editButton");
+            const deleteButton = document.getElementById("deleteButton");
             const isEditing = editButton.innerText === "Done";
 
             // Toggle button text
             editButton.innerText = isEditing ? "Edit" : "Done";
 
-            // Show or hide the checkbox column
+            // Show or hide the checkbox column and delete button
+            deleteButton.style.display = isEditing ? "none" : "inline-block";
             const rows = table.rows;
             for (let i = 0; i < rows.length; i++) {
                 const cells = rows[i].cells;
@@ -79,11 +81,47 @@
                 }
             }
         }
+
+        // Function to delete selected users
+        function deleteSelectedUsers() {
+            const checkboxes = document.querySelectorAll('input[name="selectUser"]:checked');
+            const selectedUserIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+            if (selectedUserIds.length === 0) {
+                alert("Please select at least one user to delete.");
+                return;
+            }
+
+            if (confirm("Are you sure you want to delete the selected users?")) {
+                // Send selectedUserIds to the server for deletion
+                fetch('deleteUsers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userIds: selectedUserIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Users deleted successfully.");
+                        location.reload(); // Reload the page to reflect changes
+                    } else {
+                        alert("Failed to delete users.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error deleting users:", error);
+                    alert("An error occurred while deleting users.");
+                });
+            }
+        }
     </script>
 </head>
 <body>
     <h1>Users with the Same Role</h1>
     <button id="editButton" onclick="toggleEditMode()">Edit</button>
+    <button id="deleteButton" onclick="deleteSelectedUsers()" style="display: none;">Delete</button>
     <!-- Display error message if available -->
     <c:if test="${not empty error}">
         <p style="color: red;">${error}</p>
@@ -111,7 +149,7 @@
                     <td>${user.shopId}</td>
                     <td>${user.warehouseId}</td>
                     <td class="checkbox-column" style="display: none;">
-                        <input type="checkbox" name="selectUser" value="${user.username}">
+                        <input type="checkbox" name="selectUser" value="${user.userid}">
                     </td>
                 </tr>
             </c:forEach>

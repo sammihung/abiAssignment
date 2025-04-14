@@ -99,15 +99,16 @@ public class UserDB {
         return isSuccess;
     }
 
-    public boolean deleteUserInfo(String id) {
+    public boolean deleteUserInfo(int id) {
         Connection c;
         PreparedStatement ps;
         boolean isSuccess = false;
         try {
             c = getConnection();
-            String sql = "DELETE FROM USERS WHERE id=?";
+            String sql = "DELETE FROM USERS WHERE user_id=?";
             ps = c.prepareStatement(sql);
-            ps.setString(1, id);
+            ps.setInt(1, id); // Use setInt for integer userId
+            System.out.println("Executing SQL: " + ps);
             int row = ps.executeUpdate();
             if (row >= 1) {
                 isSuccess = true;
@@ -126,7 +127,7 @@ public class UserDB {
         boolean isSuccess = false;
         try {
             c = getConnection();
-            String sql = "UPDATE USERS SET username=?, password=? WHERE id=?";
+            String sql = "UPDATE USERS SET username=?, password=? WHERE user_id=?";
             ps = c.prepareStatement(sql);
             ps.setString(1, user);
             ps.setString(2, pwd);
