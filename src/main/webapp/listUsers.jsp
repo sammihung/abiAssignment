@@ -54,10 +54,36 @@
                 }
             });
         }
+
+        // Function to toggle edit mode
+        function toggleEditMode() {
+            const table = document.getElementById("usersTable");
+            const editButton = document.getElementById("editButton");
+            const isEditing = editButton.innerText === "Done";
+
+            // Toggle button text
+            editButton.innerText = isEditing ? "Edit" : "Done";
+
+            // Show or hide the checkbox column
+            const rows = table.rows;
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].cells;
+                if (isEditing) {
+                    if (cells[cells.length - 1].classList.contains("checkbox-column")) {
+                        cells[cells.length - 1].style.display = "none";
+                    }
+                } else {
+                    if (cells[cells.length - 1].classList.contains("checkbox-column")) {
+                        cells[cells.length - 1].style.display = "";
+                    }
+                }
+            }
+        }
     </script>
 </head>
 <body>
     <h1>Users with the Same Role</h1>
+    <button id="editButton" onclick="toggleEditMode()">Edit</button>
     <!-- Display error message if available -->
     <c:if test="${not empty error}">
         <p style="color: red;">${error}</p>
@@ -66,21 +92,27 @@
     <table id="usersTable">
         <thead>
             <tr>
-                <th onclick="sortTable(0)">Username</th>
-                <th onclick="sortTable(1)">Email</th>
-                <th onclick="sortTable(2)">Role</th>
-                <th onclick="sortTable(3)">Shop ID</th>
-                <th onclick="sortTable(4)">Warehouse ID</th>
+                <th onclick="sortTable(0)">User ID</th>
+                <th onclick="sortTable(1)">Username</th>
+                <th onclick="sortTable(2)">Email</th>
+                <th onclick="sortTable(3)">Role</th>
+                <th onclick="sortTable(4)">Shop ID</th>
+                <th onclick="sortTable(5)">Warehouse ID</th>
+                <th class="checkbox-column" style="display: none;">Select</th>
             </tr>
         </thead>
         <tbody>
             <c:forEach var="user" items="${users}">
                 <tr>
+                    <td>${user.userid}</td>
                     <td>${user.username}</td>
                     <td>${user.email}</td>
                     <td>${user.role}</td>
                     <td>${user.shopId}</td>
                     <td>${user.warehouseId}</td>
+                    <td class="checkbox-column" style="display: none;">
+                        <input type="checkbox" name="selectUser" value="${user.username}">
+                    </td>
                 </tr>
             </c:forEach>
         </tbody>

@@ -204,13 +204,14 @@ public class UserDB {
 
     public List<Map<String, Object>> getUsersByRoleAsMap(String role) throws SQLException, IOException {
         List<Map<String, Object>> users = new ArrayList<>();
-        String sql = "SELECT username, userEmail, role, shop_id, warehouse_id FROM USERS WHERE role = ?";
+        String sql = "SELECT user_id, username, userEmail, role, shop_id, warehouse_id FROM USERS WHERE role = ?";
         try (Connection c = getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, role);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> user = new HashMap<>();
+                    user.put("userid", rs.getString("user_id"));
                     user.put("username", rs.getString("username"));
                     user.put("email", rs.getString("userEmail"));
                     user.put("role", rs.getString("role"));
