@@ -7,6 +7,11 @@
         <title>Welcome</title>
     </head>
     <body>
+        <h1>Welcome to the System</h1>
+        <!-- Display success message if available -->
+        <c:if test="${not empty param.message}">
+            <p style="color: green;">${param.message}</p>
+        </c:if>
         <p>Welcome to the ICT</p>
         <hr/>
         <a href="brandController?action=list">getAllBrands</a>

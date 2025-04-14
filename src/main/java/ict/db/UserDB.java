@@ -151,6 +151,8 @@ public class UserDB {
                     user.setUsername(rs.getString("username"));
                     user.setEmail(rs.getString("userEmail"));
                     user.setRole(rs.getString("role"));
+                    user.setShopId(rs.getString("shop_id"));
+                    user.setWarehouseId(rs.getString("warehouse_id"));
                     return user;
                 }
             }
@@ -158,6 +160,42 @@ public class UserDB {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean addUser(String username, String password, String email, String role, String shopId,
+            String warehouseId) {
+        Connection c;
+        PreparedStatement ps;
+        boolean isSuccess = false;
+        try {
+            c = getConnection();
+            String sql = "INSERT INTO USERS (username, password, userEmail, role, shop_id, warehouse_id) VALUES (?, ?, ?, ?, ?, ?)";
+            ps = c.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ps.setString(3, email);
+            ps.setString(4, role);
+            if (shopId != null && !shopId.isEmpty()) {
+                ps.setInt(5, Integer.parseInt(shopId));
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            if (warehouseId != null && !warehouseId.isEmpty()) {
+                ps.setInt(6, Integer.parseInt(warehouseId));
+            } else {
+                ps.setNull(6, java.sql.Types.INTEGER);
+            }
+
+            int row = ps.executeUpdate();
+            if (row >= 1) {
+                isSuccess = true;
+            }
+            ps.close();
+            c.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isSuccess;
     }
 
 }

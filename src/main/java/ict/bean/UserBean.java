@@ -3,7 +3,7 @@ package ict.bean;
 import java.io.Serializable;
 
 public class UserBean implements Serializable {
-    private String email, userId, username, password, role;
+    private String email, userId, username, password, role, shopId, warehouseId;
 
     public UserBean() {
     }
@@ -14,6 +14,22 @@ public class UserBean implements Serializable {
         this.password = password;
         this.userId = userId;
         this.role = role;
+    }
+
+    public String getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(String warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 
     public String getRole() {
