@@ -6,6 +6,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import ict.bean.UserBean;
 
@@ -196,6 +200,27 @@ public class UserDB {
             e.printStackTrace();
         }
         return isSuccess;
+    }
+
+    public List<Map<String, Object>> getUsersByRoleAsMap(String role) throws SQLException, IOException {
+        List<Map<String, Object>> users = new ArrayList<>();
+        String sql = "SELECT username, userEmail, role, shop_id, warehouse_id FROM USERS WHERE role = ?";
+        try (Connection c = getConnection();
+                PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, role);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> user = new HashMap<>();
+                    user.put("username", rs.getString("username"));
+                    user.put("email", rs.getString("userEmail"));
+                    user.put("role", rs.getString("role"));
+                    user.put("shopId", rs.getObject("shop_id"));
+                    user.put("warehouseId", rs.getObject("warehouse_id"));
+                    users.add(user);
+                }
+            }
+        }
+        return users;
     }
 
 }

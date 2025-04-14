@@ -50,6 +50,7 @@
         <jsp:useBean id="userInfo" class="ict.bean.UserBean" scope="session" />
         <div class="menu-bar">
             <a href="welcome.jsp">Home</a>
+            <a href="${pageContext.request.contextPath}/listUsers">List Users</a>
             <c:choose>
                 <c:when test="${userInfo.role == 'Bakery shop staff'}">
                     <a href="register.jsp">Register</a>
