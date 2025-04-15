@@ -302,7 +302,7 @@
                     <%-- Add a data attribute to the row for easy User ID access if needed for saving --%>
                     <tr data-userid="${user.userid}">
                         <%-- Add editable-cell class to cells that should become inputs --%>
-                        <td class="editable-cell">${user.userid}</td> <%-- Typically UserID is not editable, remove class if so --%>
+                        <td>${user.userid}</td> <%-- Typically UserID is not editable, remove class if so --%>
                         <td class="editable-cell">${user.username}</td>
                         <td class="editable-cell">${user.email}</td>
                         <td class="editable-cell">${user.role}</td>
