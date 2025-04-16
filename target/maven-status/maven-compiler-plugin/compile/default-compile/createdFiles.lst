@@ -8,6 +8,7 @@ ict\db\UserDB.class
 ict\servlet\LoginController.class
 ict\db\BakeryShopDB.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
+ict\servlet\ListFruitsController.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class
 ict\bean\UserBean.class

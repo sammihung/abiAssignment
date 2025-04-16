@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+
     <servlet>
-        <servlet-name>FruitController</servlet-name> 
-        <servlet-class>ict.servlet.FruitController</servlet-class> 
+        <servlet-name>FruitController</servlet-name>
+        <servlet-class>ict.servlet.FruitController</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ListFruitsController</servlet-name>
+        <servlet-class>ict.servlet.ListFruitsController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>FruitController</servlet-name> 
-        <url-pattern>/manageFruits</url-pattern> 
+        <servlet-name>FruitController</servlet-name>
+        <url-pattern>/manageFruits</url-pattern>
     </servlet-mapping>
-    <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
-    </session-config>
+
+
+    <servlet-mapping>
+        <servlet-name>ListFruitsController</servlet-name>
+        <url-pattern>/listFruits</url-pattern> </servlet-mapping>
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
@@ -25,4 +31,4 @@
         <param-name>dbPassword</param-name>
         <param-value/>
     </context-param>
-</web-app>
+    </web-app>

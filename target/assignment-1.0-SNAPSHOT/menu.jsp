@@ -8,7 +8,10 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Menu</title>
         <style>
-            body { margin: 0; font-family: sans-serif; } /* Reset body margin */
+            body {
+                margin: 0;
+                font-family: sans-serif;
+            } /* Reset body margin */
             .menu-bar {
                 background-color: #333;
                 overflow: hidden;
@@ -63,9 +66,11 @@
             <a href="${pageContext.request.contextPath}/welcome.jsp">Home</a>
             <a href="${pageContext.request.contextPath}/listUsers">List Users</a>
 
-            <%-- ****** ADDED LINK TO CREATE FRUIT PAGE ****** --%>
+            <%-- Link to Create Fruit Page --%>
             <a href="${pageContext.request.contextPath}/manageFruits">Create Fruit</a>
-            <%-- ********************************************** --%>
+
+            <%-- Link to List Fruits Page --%>
+            <a href="${pageContext.request.contextPath}/listFruits">List Fruits</a>
 
             <%-- Role-specific links --%>
             <c:choose>
