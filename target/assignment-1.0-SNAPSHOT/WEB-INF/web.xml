@@ -31,7 +31,14 @@
         <servlet-name>DeleteFruitController</servlet-name>
         <url-pattern>/deleteFruit</url-pattern>
     </servlet-mapping>
-
+    <servlet>
+        <servlet-name>ReservationController</servlet-name>
+        <servlet-class>ict.servlet.ReservationController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReservationController</servlet-name>
+        <url-pattern>/reserveFruit</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>ListFruitsController</servlet-name>

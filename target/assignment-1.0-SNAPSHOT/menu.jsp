@@ -63,35 +63,40 @@
         <%-- <jsp:useBean id="userInfo" class="ict.bean.UserBean" scope="session" /> --%>
 
         <div class="menu-bar">
-            <a href="${pageContext.request.contextPath}/welcome.jsp">Home</a>
-            <a href="${pageContext.request.contextPath}/listUsers">List Users</a>
-
-
-            <%-- Link to List Fruits Page --%>
-            <a href="${pageContext.request.contextPath}/listFruits">List Fruits</a>
+            <a href="<c:url value='/welcome.jsp'/>">Home</a>
+            <a href="<c:url value='/listUsers'/>">List Users</a>
+            <a href="<c:url value='/listFruits'/>">List Fruits</a> <%-- Link to List Fruits Page --%>
 
             <%-- Role-specific links --%>
             <c:choose>
                 <c:when test="${userInfo.role == 'Bakery shop staff'}">
-                    <a href="${pageContext.request.contextPath}/register.jsp">Register</a> <%-- Use context path --%>
+                     <%-- Assuming shop staff might need to register something else? Or maybe this link is misplaced? --%>
+                    <a href="<c:url value='/register.jsp'/>">Register</a>
+                    <%-- ADDED: Link to Reserve Fruit page --%>
+                    <a href="<c:url value='/reserveFruit'/>">Reserve Fruit</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
-                    <a href="${pageContext.request.contextPath}/register.jsp">Register</a> <%-- Use context path --%>
+                    <a href="<c:url value='/register.jsp'/>">Register</a>
+                    <%-- Warehouse staff might need other links, e.g., manage deliveries, inventory --%>
+                    <%-- <a href="<c:url value='/manageDeliveries'/>">Manage Deliveries</a> --%>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <%-- Assuming manageUsers.jsp exists --%>
-                    <a href="${pageContext.request.contextPath}/manageUsers.jsp">Manage Users</a>
+                    <a href="<c:url value='/manageUsers.jsp'/>">Manage Users</a>
+                     <%-- Management might need overview links --%>
+                     <%-- <a href="<c:url value='/viewReports'/>">View Reports</a> --%>
                 </c:when>
                 <%-- Consider adding links for other roles or a default --%>
                 <%--
                 <c:otherwise>
-                    <a href="${pageContext.request.contextPath}/help.jsp">Help</a>
+                    <a href="<c:url value='/help.jsp'/>">Help</a>
                 </c:otherwise>
                 --%>
             </c:choose>
 
             <%-- Logout Form and User Info (Floated Right) --%>
-            <form class="logout-form" method="post" action="${pageContext.request.contextPath}/logout"> <%-- Updated Action --%>
+            <%-- Ensure the logout action points to the correct servlet/path handling logout --%>
+            <form class="logout-form" method="post" action="<c:url value='/login'/>"> <%-- Assuming /login handles logout via POST --%>
                 <input type="hidden" name="action" value="logout" /> <%-- Keep hidden field if needed by servlet --%>
                 <button type="submit" class="logout-button">Logout</button> <%-- Styled as button --%>
             </form>
