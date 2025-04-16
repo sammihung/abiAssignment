@@ -52,6 +52,10 @@ public class UserBean implements Serializable {
         return userId;
     }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getUsername() {
         return username;
     }

@@ -9,4 +9,5 @@ ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class
 ict\bean\UserBean.class
+ict\servlet\UpdateUserController.class
 ict\bean\WarehouseBean.class

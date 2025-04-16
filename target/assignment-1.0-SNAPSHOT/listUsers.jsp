@@ -1,327 +1,171 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%-- Assuming menu.jsp provides the navigation menu --%>
-<%@ include file="menu.jsp" %>
-<%-- Import JSTL core library if not already implicitly available --%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- JSTL core library --%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> <%-- JSTL functions library (optional) --%>
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>List Users</title>
-        <style>
-            /* Basic table styling */
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 15px;
-            }
-            table, th, td {
-                border: 1px solid black;
-            }
-            th, td {
-                padding: 8px;
-                text-align: left;
-                vertical-align: top; /* Align content to top */
-            }
-            th {
-                background-color: #f2f2f2;
-                cursor: pointer; /* Indicate headers are clickable for sorting */
-            }
-            /* Style for input fields within cells during edit mode */
-            td.editable-cell input.cell-input {
-                width: 95%; /* Use most of the cell width */
-                padding: 4px;
-                box-sizing: border-box; /* Include padding/border in width calculation */
-                border: 1px solid #ccc; /* Subtle border for input */
-            }
-            /* Styling for buttons */
-            button {
-                padding: 5px 10px;
-                margin-right: 5px;
-                cursor: pointer;
-            }
-            /* Styling for error messages */
-            .error-message {
-                color: red;
-                margin-top: 10px;
-            }
-        </style>
-        <script>
-            // --- Global Scope Variable ---
-            // Track the current sorting state for each column {columnIndex: isAscending}
-            const sortingState = {};
+<head>
+    <title>User List</title>
+    <%-- Link to DataTables CSS --%>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        /* Ensure table header and body styles are compatible with DataTables */
+        #userTable th, #userTable td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        #userTable th { background-color: #f2f2f2; }
+        /* Style the action buttons */
+        .actions a, .actions button {
+             margin-right: 5px;
+             text-decoration: none;
+             padding: 5px 10px;
+             border: 1px solid #ccc;
+             border-radius: 3px;
+             cursor: pointer; /* Make button look clickable */
+             font-size: 0.9em; /* Slightly smaller buttons */
+        }
+        .actions a.update { background-color: #ffc107; color: black; border-color: #dda800; }
+        .actions button.delete { background-color: #dc3545; color: white; border-color: #c82333; }
+        .message { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-            // --- Sorting Function ---
-            function sortTable(columnIndex) {
-                const table = document.getElementById("usersTable");
-                // Get tbody rows only for sorting data rows
-                const tbody = table.tBodies[0];
-                const rows = Array.from(tbody.rows);
+        /* DataTables search/filter alignment */
+        .dataTables_wrapper .dataTables_filter { float: right; text-align: right; margin-bottom: 10px; }
+        .dataTables_wrapper .dataTables_length { float: left; margin-bottom: 10px;}
+        .dataTables_wrapper .dataTables_info { clear: both; float: left; padding-top: 10px;}
+        .dataTables_wrapper .dataTables_paginate { float: right; padding-top: 10px;}
 
-                // Check if table exists and has rows
-                if (!table || rows.length === 0)
-                    return;
+    </style>
+</head>
+<body>
 
-                // Determine sorting order (toggle)
-                const isAscending = !sortingState[columnIndex];
-                sortingState[columnIndex] = isAscending;
+<h1>User List</h1>
 
-                // Sort the rows based on cell content (text or input value)
-                rows.sort((rowA, rowB) => {
-                    const cellA = rowA.cells[columnIndex];
-                    const cellB = rowB.cells[columnIndex];
+<%-- Display messages passed via request parameters (e.g., after redirect) --%>
+<c:if test="${not empty param.message}">
+    <div class="message success"><c:out value="${param.message}"/></div>
+</c:if>
+<c:if test="${not empty param.error}">
+    <div class="message error"><c:out value="${param.error}"/></div>
+</c:if>
+<%-- Display errors passed via request attributes (e.g., after forward) --%>
+<c:if test="${not empty requestScope.error}">
+     <div class="message error"><c:out value="${requestScope.error}"/></div>
+ </c:if>
+ <c:if test="${not empty requestScope.errorMessage}">
+     <div class="message error"><c:out value="${requestScope.errorMessage}"/></div>
+ </c:if>
 
-                    // Get content, checking if it's an input field
-                    const cellAContent = cellA.querySelector('input.cell-input') ? cellA.querySelector('input.cell-input').value : cellA.textContent;
-                    const cellBContent = cellB.querySelector('input.cell-input') ? cellB.querySelector('input.cell-input').value : cellB.textContent;
 
-                    // Case-insensitive comparison
-                    const valA = cellAContent.toLowerCase().trim();
-                    const valB = cellBContent.toLowerCase().trim();
-
-                    // Basic comparison logic
-                    if (valA < valB)
-                        return isAscending ? -1 : 1;
-                    if (valA > valB)
-                        return isAscending ? 1 : -1;
-                    return 0; // Values are equal
-                });
-
-                // Re-append sorted rows to the tbody
-                rows.forEach(row => tbody.appendChild(row));
-
-                // Update column header indicators
-                const headers = table.querySelectorAll("thead th"); // Select only thead th
-                headers.forEach((header, index) => {
-                    // Remove existing arrows more reliably using textContent
-                    let currentHeaderText = header.textContent.replace(/[\u25B2\u25BC]/g, "").trim();
-                    if (index < header.parentNode.cells.length - 1) { // Avoid adding arrow to the hidden select column header initially
-                        if (index === columnIndex) {
-                            // Add arrow to the sorted column header
-                            header.innerHTML = currentHeaderText + (isAscending ? " &#9650;" : " &#9660;"); // Appending HTML entity
-                        } else {
-                            // Set text content directly for others
-                            header.textContent = currentHeaderText;
-                        }
-                    } else {
-                        // Ensure the select column header text doesn't get arrows
-                        header.textContent = currentHeaderText;
-                    }
-
-                });
-            }
-
-            // --- Edit Mode Helper Functions ---
-
-            // Helper function to convert a text cell to an input cell
-            function switchToInput(cell) {
-                const currentText = cell.textContent.trim();
-                // Clear previous content
-                while (cell.firstChild) {
-                    cell.removeChild(cell.firstChild);
-                }
-                // Create input
-                const inputElement = document.createElement('input');
-                inputElement.type = 'text';
-                inputElement.value = currentText;
-                inputElement.classList.add('cell-input'); // Add class for styling/selection
-                // Store original value in data attribute (useful for cancel functionality if needed later)
-                inputElement.setAttribute('data-original-value', currentText);
-                cell.appendChild(inputElement);
-            }
-
-            // Helper function to convert an input cell back to a text cell
-            function switchToText(cell, saveChanges = false) {
-                const inputElement = cell.querySelector('input.cell-input');
-                if (inputElement) {
-                    const currentValue = inputElement.value;
-                    const originalValue = inputElement.getAttribute('data-original-value');
-
-                    // --- !!! PLACEHOLDER FOR SAVE LOGIC !!! ---
-                    // If 'saveChanges' is true AND the value actually changed, trigger save
-                    if (saveChanges && currentValue !== originalValue) {
-                        console.log(`Value changed in cell. Original: "${originalValue}", New: "${currentValue}". Triggering save...`);
-                        // ** TODO: Implement AJAX Call to Save Data **
-                        // You need:
-                        // 1. User ID (from a sibling cell or data attribute on the row 'tr')
-                        // 2. Column Identifier (e.g., column index or a data attribute on the 'th')
-                        // 3. The 'currentValue'
-                        // Use fetch() similar to deleteSelectedUsers to send data to a save endpoint.
-                        // Example: saveCellData(userId, columnName, currentValue);
-                    }
-                    // --- End Placeholder ---
-
-                    // Clear the input element
-                    while (cell.firstChild) {
-                        cell.removeChild(cell.firstChild);
-                    }
-                    // Set text content back (using the potentially updated value)
-                    cell.textContent = currentValue;
-            }
-            }
-
-            // --- Main Toggle Function ---
-            function toggleEditMode() {
-                const table = document.getElementById("usersTable");
-                const editButton = document.getElementById("editButton");
-                const deleteButton = document.getElementById("deleteButton");
-
-                if (!table || !editButton || !deleteButton) {
-                    console.error("Required elements (table, edit button, delete button) not found.");
-                    return;
-                }
-
-                // Check current state based on button text *before* changing it
-                const isCurrentlyInEditMode = editButton.innerText === "Done";
-
-                // Toggle button text
-                editButton.innerText = isCurrentlyInEditMode ? "Edit" : "Done";
-
-                // Show/hide delete button
-                deleteButton.style.display = isCurrentlyInEditMode ? "none" : "inline-block";
-
-                // Show/hide the checkbox column header and cells
-                const checkboxHeader = table.querySelector('th.checkbox-column');
-                const checkboxCells = table.querySelectorAll('td.checkbox-column');
-
-                if (checkboxHeader) {
-                    checkboxHeader.style.display = isCurrentlyInEditMode ? "none" : ""; // Show when entering edit mode
-                }
-                checkboxCells.forEach(cbCell => {
-                    cbCell.style.display = isCurrentlyInEditMode ? "none" : ""; // Show when entering edit mode
-                });
-
-                // Toggle editable cells between text and input
-                const editableCells = table.querySelectorAll('td.editable-cell');
-                editableCells.forEach(cell => {
-                    if (isCurrentlyInEditMode) {
-                        // LEAVING edit mode: Change input back to text, flag potential save
-                        switchToText(cell, true);
-                    } else {
-                        // ENTERING edit mode: Change text to input
-                        switchToInput(cell);
-                    }
-                });
-            }
-
-            // --- Delete Function ---
-            function deleteSelectedUsers() {
-                const checkboxes = document.querySelectorAll('input[name="selectUser"]:checked');
-                const selectedUserIds = Array.from(checkboxes).map(checkbox => checkbox.value);
-
-                if (selectedUserIds.length === 0) {
-                    alert("Please select at least one user to delete.");
-                    return;
-                }
-
-                if (confirm(`Are you sure you want to delete ${selectedUserIds.length} selected user(s)?`)) {
-                    // **NOTE:** Adjust 'deleteUsers' to your actual server endpoint URL
-                    fetch('deleteUsers', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            // Add any other required headers, like CSRF tokens if needed
-                        },
-                        body: JSON.stringify({userIds: selectedUserIds})
-                    })
-                            .then(response => {
-                                if (!response.ok) {
-                                    // Try to get error message from server if possible
-                                    return response.text().then(text => {
-                                        throw new Error(`Server error: ${response.status} - ${text || response.statusText}`);
-                                    });
-                                }
-                                // Handle potential 'No Content' success response
-                                if (response.status === 204) {
-                                    return {success: true}; // Treat 204 as success
-                                }
-                                // Otherwise, expect JSON
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data && data.success !== false) {
-                                    alert("Users deleted successfully.");
-                                    location.reload(); // Reload the page to show updated list
-                                } else {
-                                    // Use server message if available, otherwise generic failure
-                                    // Corrected version using string concatenation
-                                    alert("Failed to delete users: " + (data?.message || 'Server indicated failure.'));
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Error deleting users:", error);
-                                alert("An error occurred while deleting users:\n" + error.message);
-                            });
-                }
-            }
-
-            // --- Ensure functions run after the DOM is ready ---
-            // While toggleEditMode and deleteSelectedUsers are called via onclick,
-            // it's good practice for any setup code.
-            // document.addEventListener('DOMContentLoaded', function() {
-            //     // Any setup code that needs the DOM can go here
-            // });
-
-        </script>
-    </head>
-    <body>
-
-        <h1>Users List</h1> <%-- Changed title slightly --%>
-
-        <%-- Display potential error message passed from Servlet --%>
-        <c:if test="${not empty requestScope.error}">
-            <p class="error-message">${requestScope.error}</p>
-        </c:if>
-        <c:if test="${not empty requestScope.message}">
-            <p style="color: green;">${requestScope.message}</p>
-        </c:if>
-
-        <%-- Buttons for Edit/Done and Delete --%>
-        <button id="editButton" onclick="toggleEditMode()">Edit</button>
-        <button id="deleteButton" onclick="deleteSelectedUsers()" style="display: none;">Delete Selected</button>
-
-        <%-- Table to display users --%>
-        <table id="usersTable">
+<c:choose>
+    <c:when test="${not empty users}">
+        <%-- Add an ID to the table for DataTables to target --%>
+        <table id="userTable" class="display">
             <thead>
                 <tr>
-                    <%-- Make headers clickable for sorting --%>
-                    <th onclick="sortTable(0)">User ID</th>
-                    <th onclick="sortTable(1)">Username</th>
-                    <th onclick="sortTable(2)">Email</th>
-                    <th onclick="sortTable(3)">Role</th>
-                    <th onclick="sortTable(4)">Shop ID</th>
-                    <th onclick="sortTable(5)">Warehouse ID</th>
-                        <%-- Hidden column for checkboxes, shown in edit mode --%>
-                    <th class="checkbox-column" style="display: none;">Select</th>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Shop ID</th>
+                    <th>Warehouse ID</th>
+                    <th data-orderable="false">Actions</th> <%-- Disable sorting on the Actions column --%>
                 </tr>
             </thead>
             <tbody>
-                <%-- Loop through users passed from the Servlet/Controller --%>
-                <c:forEach var="user" items="${requestScope.users}">
-                    <%-- Add a data attribute to the row for easy User ID access if needed for saving --%>
-                    <tr data-userid="${user.userid}">
-                        <%-- Add editable-cell class to cells that should become inputs --%>
-                        <td>${user.userid}</td> <%-- Typically UserID is not editable, remove class if so --%>
-                        <td class="editable-cell">${user.username}</td>
-                        <td class="editable-cell">${user.email}</td>
-                        <td class="editable-cell">${user.role}</td>
-                        <td class="editable-cell">${user.shopId}</td>
-                        <td class="editable-cell">${user.warehouseId}</td>
-                        <%-- Checkbox column, initially hidden --%>
-                        <td class="checkbox-column" style="display: none;">
-                            <input type="checkbox" name="selectUser" value="${user.userid}">
+                <c:forEach var="user" items="${users}">
+                    <%-- Add a unique ID to each row if needed for JS manipulation --%>
+                    <tr id="user-row-${user.userid}">
+                        <td><c:out value="${user.userid}"/></td>
+                        <td><c:out value="${user.username}"/></td>
+                        <td><c:out value="${user.email}"/></td>
+                        <td><c:out value="${user.role}"/></td>
+                        <td><c:out value="${user.shopId != null ? user.shopId : 'N/A'}"/></td>
+                        <td><c:out value="${user.warehouseId != null ? user.warehouseId : 'N/A'}"/></td>
+                        <td class="actions">
+                            <%-- Update Link --%>
+                            <a href="updateUser?userId=${user.userid}" class="update">Update</a>
+                            <%-- Delete Button - Calls JavaScript function --%>
+                            <button type="button" class="delete" onclick="deleteUser('${user.userid}')">Delete</button>
                         </td>
                     </tr>
                 </c:forEach>
-                <%-- Handle case where there are no users --%>
-                <c:if test="${empty requestScope.users}">
-                    <tr>
-                        <td colspan="7" style="text-align: center;">No users found.</td>
-                    </tr>
-                </c:if>
             </tbody>
         </table>
+    </c:when>
+    <c:otherwise>
+        <p>No users found for your role.</p>
+    </c:otherwise>
+</c:choose>
 
-    </body>
+<p><a href="welcome.jsp">Back to Welcome Page</a></p> <%-- Link back to a main/welcome page --%>
+
+<%-- Include jQuery (required by DataTables) --%>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<%-- Include DataTables JavaScript --%>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<%-- JavaScript for DataTables Initialization and Delete Function --%>
+<script>
+    // Initialize DataTables for sorting, searching, pagination
+    $(document).ready(function() {
+        $('#userTable').DataTable({
+            // Optional: Add configurations like default sorting order, paging options etc.
+            // Example: Order by the first column (User ID) ascending by default
+             "order": [[ 0, "asc" ]]
+        });
+    });
+
+    // JavaScript function to handle user deletion via fetch API
+    function deleteUser(userId) {
+        if (confirm('Are you sure you want to delete user ID: ' + userId + '?')) {
+            // Data structure expected by your DeleteUsersController
+            const data = { userIds: [userId] }; // Send as an array with single ID
+
+            fetch('deleteUsers', { // URL mapping for DeleteUsersController
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add CSRF token header here if your application uses them
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                // Check if response is JSON, otherwise handle as text
+                 const contentType = response.headers.get("content-type");
+                 if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json();
+                 } else {
+                     // Handle non-JSON response (e.g., plain text error from server)
+                     return response.text().then(text => { throw new Error("Received non-JSON response: " + text); });
+                 }
+             })
+            .then(result => {
+                console.log('Delete response:', result); // Log server response
+                if (result.success) {
+                    alert(result.message || 'User deleted successfully.');
+                    // Option 1: Reload the whole page
+                    // location.reload();
+
+                    // Option 2: Remove the row from the table using DataTables API (more seamless)
+                     var table = $('#userTable').DataTable();
+                     // Find the row with the specific ID and remove it
+                     table.row('#user-row-' + userId).remove().draw(false); // 'false' prevents resetting pagination
+
+                } else {
+                    alert('Error deleting user: ' + (result.message || 'Failed to delete user. Check server logs.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error during fetch:', error);
+                alert('An error occurred while trying to delete the user: ' + error.message);
+            });
+        }
+    }
+</script>
+
+</body>
 </html>
