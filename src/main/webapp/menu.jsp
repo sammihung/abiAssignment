@@ -72,8 +72,9 @@
                 <c:when test="${userInfo.role == 'Bakery shop staff'}">
                      <%-- Assuming shop staff might need to register something else? Or maybe this link is misplaced? --%>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
-                    <%-- ADDED: Link to Reserve Fruit page --%>
                     <a href="<c:url value='/reserveFruit'/>">Reserve Fruit</a>
+                    <%-- ADDED: Link to Borrow Fruit page --%>
+                    <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>

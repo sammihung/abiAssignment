@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
-
+    <servlet>
+        <servlet-name>BorrowingController</servlet-name>
+        <servlet-class>ict.servlet.BorrowingController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BorrowingController</servlet-name>
+        <url-pattern>/borrowFruit</url-pattern>
+    </servlet-mapping>
     <servlet>
         <servlet-name>FruitController</servlet-name>
         <servlet-class>ict.servlet.FruitController</servlet-class>
@@ -44,6 +51,7 @@
         <servlet-name>ListFruitsController</servlet-name>
         <url-pattern>/listFruits</url-pattern> 
     </servlet-mapping>
+    
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
