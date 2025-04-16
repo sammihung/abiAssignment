@@ -3,8 +3,10 @@ ict\bean\BakeryShopBean.class
 ict\db\WarehouseDB.class
 ict\servlet\ListUsersController.class
 ict\servlet\assignment\JakartaRestConfiguration.class
+ict\servlet\UpdateFruitController.class
 ict\bean\FruitBean.class
 ict\db\UserDB.class
+ict\servlet\DeleteFruitController.class
 ict\servlet\LoginController.class
 ict\db\BakeryShopDB.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class

@@ -88,8 +88,7 @@
             </div>
         </form>
 
-        <a href="${pageContext.request.contextPath}/welcome.jsp" class="back-link">Back to Welcome Page</a>
-         <%-- <a href="${pageContext.request.contextPath}/listFruits" class="back-link">View Fruits</a> --%>
+       <a href="javascript:history.back()" class="back-link">Back</a>
 
     </div>
 

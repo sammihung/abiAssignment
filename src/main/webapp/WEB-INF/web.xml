@@ -14,11 +14,29 @@
         <servlet-name>FruitController</servlet-name>
         <url-pattern>/manageFruits</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>UpdateFruitController</servlet-name>
+        <servlet-class>ict.servlet.UpdateFruitController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateFruitController</servlet-name>
+        <url-pattern>/updateFruit</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteFruitController</servlet-name>
+        <servlet-class>ict.servlet.DeleteFruitController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteFruitController</servlet-name>
+        <url-pattern>/deleteFruit</url-pattern>
+    </servlet-mapping>
 
 
     <servlet-mapping>
         <servlet-name>ListFruitsController</servlet-name>
-        <url-pattern>/listFruits</url-pattern> </servlet-mapping>
+        <url-pattern>/listFruits</url-pattern> 
+    </servlet-mapping>
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
@@ -31,4 +49,4 @@
         <param-name>dbPassword</param-name>
         <param-value/>
     </context-param>
-    </web-app>
+</web-app>
