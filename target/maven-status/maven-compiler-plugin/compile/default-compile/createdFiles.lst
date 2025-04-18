@@ -1,3 +1,4 @@
+ict\db\BorrowingDB$DeliveryNeedBean.class
 ict\db\BorrowingDB.class
 ict\db\WarehouseDB.class
 ict\servlet\ListUsersController.class
@@ -16,6 +17,7 @@ ict\bean\UserBean.class
 ict\servlet\NeedsApprovalController.class
 ict\bean\WarehouseBean.class
 ict\db\FruitDB.class
+ict\servlet\CheckoutToShopController.class
 ict\db\ReservationDB.class
 ict\servlet\FruitController.class
 ict\bean\BakeryShopBean.class

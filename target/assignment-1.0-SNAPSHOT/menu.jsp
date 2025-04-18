@@ -81,8 +81,9 @@
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a>
                     <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
-                     <%-- Link to Arrange Delivery page --%>
                     <a href="<c:url value='/arrangeDelivery'/>">Arrange Delivery</a>
+                     <%-- Link to Checkout to Shops page --%>
+                    <a href="<c:url value='/checkoutToShop'/>">Checkout to Shops</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <%-- Assuming manageUsers.jsp exists --%>

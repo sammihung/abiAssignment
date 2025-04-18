@@ -97,6 +97,15 @@
         <url-pattern>/arrangeDelivery</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>CheckoutToShopController</servlet-name>
+        <servlet-class>ict.servlet.CheckoutToShopController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CheckoutToShopController</servlet-name>
+        <url-pattern>/checkoutToShop</url-pattern>
+    </servlet-mapping>
+    
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
