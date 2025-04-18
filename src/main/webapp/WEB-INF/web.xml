@@ -78,7 +78,16 @@
         <servlet-name>UpdateWarehouseInventoryController</servlet-name>
         <url-pattern>/updateWarehouseInventory</url-pattern>
     </servlet-mapping>
-
+    
+    <servlet>
+        <servlet-name>NeedsApprovalController</servlet-name>
+        <servlet-class>ict.servlet.NeedsApprovalController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NeedsApprovalController</servlet-name>
+        <url-pattern>/needsApproval</url-pattern>
+    </servlet-mapping>
+    
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>

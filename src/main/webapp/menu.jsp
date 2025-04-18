@@ -79,8 +79,9 @@
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>
-                     <%-- Link to Update Warehouse Inventory page --%>
                     <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a>
+                     <%-- Link to Approve Needs page --%>
+                    <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
                     <%-- Other potential links for warehouse staff --%>
                     <%-- <a href="<c:url value='/manageDeliveries'/>">Manage Deliveries</a> --%>
                 </c:when>
