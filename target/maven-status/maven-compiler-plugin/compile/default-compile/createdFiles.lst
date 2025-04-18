@@ -21,6 +21,7 @@ ict\servlet\ReservationController.class
 ict\servlet\BorrowingController.class
 ict\bean\InventoryBean.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
+ict\servlet\UpdateWarehouseInventoryController.class
 ict\servlet\ListFruitsController.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class

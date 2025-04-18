@@ -521,4 +521,163 @@ public class BorrowingDB {
         return success;
     }
 
+    // Add these methods inside your existing BorrowingDB class
+
+    /**
+     * Retrieves the current inventory for a specific warehouse, including fruit
+     * names.
+     * Assumes warehouse inventory has shop_id set to NULL.
+     *
+     * @param warehouseId The ID of the warehouse.
+     * @return A List of InventoryBean objects with fruit names populated.
+     */
+    public List<InventoryBean> getInventoryForWarehouse(int warehouseId) {
+        List<InventoryBean> inventoryList = new ArrayList<>();
+        // SQL to join inventory with fruits, filtering by warehouse_id and where
+        // shop_id IS NULL
+        String sql = "SELECT i.inventory_id, i.fruit_id, i.shop_id, i.warehouse_id, i.quantity, f.fruit_name " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "WHERE i.warehouse_id = ? AND i.shop_id IS NULL " + // Filter for specific warehouse, NULL shop
+                "ORDER BY f.fruit_name";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, warehouseId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventoryBean item = new InventoryBean();
+                item.setInventoryId(rs.getInt("inventory_id"));
+                item.setFruitId(rs.getInt("fruit_id"));
+                // shop_id should be null based on query, but retrieve it anyway
+                item.setShopId(rs.getObject("shop_id") != null ? rs.getInt("shop_id") : null);
+                item.setWarehouseId(rs.getInt("warehouse_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setFruitName(rs.getString("fruit_name"));
+                // Set locationName if needed (e.g., warehouse name)
+                // item.setLocationName(warehouseDb.getWarehouseById(warehouseId).getWarehouse_name());
+                // // Requires WarehouseDB access
+                inventoryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} inventory items for WarehouseID={1}",
+                    new Object[] { inventoryList.size(), warehouseId });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory for warehouse " + warehouseId, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return inventoryList;
+    }
+
+    /**
+     * Sets the inventory quantity for a specific fruit in a specific warehouse.
+     * Assumes shop_id should be NULL for warehouse inventory.
+     * If the inventory record exists, it updates the quantity.
+     * If the record does not exist, it inserts a new one.
+     * Ensures the quantity is not set below zero.
+     *
+     * @param fruitId     The ID of the fruit.
+     * @param warehouseId The ID of the warehouse.
+     * @param newQuantity The desired new quantity (must be >= 0).
+     * @return true if the operation was successful, false otherwise.
+     */
+    public boolean setWarehouseInventoryQuantity(int fruitId, int warehouseId, int newQuantity) {
+        if (newQuantity < 0) {
+            LOGGER.log(Level.WARNING,
+                    "Attempted to set negative inventory quantity ({0}) for FruitID={1}, WarehouseID={2}",
+                    new Object[] { newQuantity, fruitId, warehouseId });
+            return false; // Prevent negative quantities
+        }
+
+        Connection conn = null;
+        PreparedStatement psCheck = null;
+        PreparedStatement psUpdate = null;
+        PreparedStatement psInsert = null;
+        ResultSet rsCheck = null;
+        boolean success = false;
+
+        // Check for existing record for this fruit in this warehouse (where shop_id is
+        // null)
+        String checkSql = "SELECT inventory_id FROM inventory WHERE fruit_id = ? AND warehouse_id = ? AND shop_id IS NULL";
+        String updateSql = "UPDATE inventory SET quantity = ? WHERE inventory_id = ?";
+        // Insert with shop_id explicitly set to NULL
+        String insertSql = "INSERT INTO inventory (fruit_id, warehouse_id, quantity, shop_id) VALUES (?, ?, ?, NULL)";
+
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); // Use transaction
+
+            // 1. Check if the record exists
+            psCheck = conn.prepareStatement(checkSql);
+            psCheck.setInt(1, fruitId);
+            psCheck.setInt(2, warehouseId);
+            rsCheck = psCheck.executeQuery();
+
+            int inventoryId = -1;
+            if (rsCheck.next()) {
+                inventoryId = rsCheck.getInt("inventory_id");
+            }
+
+            if (inventoryId != -1) {
+                // 2a. Record exists - UPDATE
+                LOGGER.log(Level.INFO, "Updating inventory for FruitID={0}, WarehouseID={1} to Quantity={2}",
+                        new Object[] { fruitId, warehouseId, newQuantity });
+                psUpdate = conn.prepareStatement(updateSql);
+                psUpdate.setInt(1, newQuantity);
+                psUpdate.setInt(2, inventoryId);
+                int rowsAffected = psUpdate.executeUpdate();
+                success = (rowsAffected > 0);
+            } else {
+                // 2b. Record does not exist - INSERT
+                LOGGER.log(Level.INFO, "Inserting new inventory for FruitID={0}, WarehouseID={1}, Quantity={2}",
+                        new Object[] { fruitId, warehouseId, newQuantity });
+                psInsert = conn.prepareStatement(insertSql);
+                psInsert.setInt(1, fruitId);
+                psInsert.setInt(2, warehouseId);
+                psInsert.setInt(3, newQuantity);
+                int rowsAffected = psInsert.executeUpdate();
+                success = (rowsAffected > 0);
+            }
+
+            if (success) {
+                conn.commit();
+                LOGGER.log(Level.INFO, "Warehouse inventory update/insert committed successfully.");
+            } else {
+                conn.rollback();
+                LOGGER.log(Level.WARNING, "Warehouse inventory update/insert failed, transaction rolled back.");
+            }
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE,
+                    "Error setting inventory quantity for FruitID=" + fruitId + ", WarehouseID=" + warehouseId, e);
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Rollback failed", ex);
+                }
+            }
+            success = false;
+        } finally {
+            closeQuietly(rsCheck);
+            closeQuietly(psCheck);
+            closeQuietly(psUpdate);
+            closeQuietly(psInsert);
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to close connection", e);
+                }
+            }
+        }
+        return success;
+    }
+
 }
