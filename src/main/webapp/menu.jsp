@@ -64,8 +64,6 @@
 
         <div class="menu-bar">
             <a href="<c:url value='/welcome.jsp'/>">Home</a>
-            <a href="<c:url value='/listUsers'/>">List Users</a>
-            <a href="<c:url value='/listFruits'/>">List Fruits</a> <%-- Link to List Fruits Page --%>
 
             <%-- Role-specific links --%>
             <c:choose>
@@ -82,39 +80,27 @@
                     <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a>
                     <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
                     <a href="<c:url value='/arrangeDelivery'/>">Arrange Delivery</a>
-                     <%-- Link to Checkout to Shops page --%>
                     <a href="<c:url value='/checkoutToShop'/>">Checkout to Shops</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
-                    <%-- Assuming manageUsers.jsp exists --%>
-                    <a href="<c:url value='/manageUsers.jsp'/>">Manage Users</a>
-                     <%-- Management might need overview links --%>
-                     <%-- <a href="<c:url value='/viewReports'/>">View Reports</a> --%>
-                     <%-- <a href="<c:url value='/listAllReservations'/>">View All Reservations</a> --%>
-                     <%-- <a href="<c:url value='/viewAllInventory'/>">View All Inventory</a> --%>
-                     <%-- <a href="<c:url value='/viewDeliveries'/>">View Deliveries</a> --%>
+                    <a href="<c:url value='/listUsers'/>">Manage Users</a>
+                    <a href="<c:url value='/listFruits'/>">Manage Fruit Types</a>
+                    <%-- UPDATED Link to Advanced Report --%>
+                    <a href="<c:url value='/viewAdvancedReport'/>">Advanced Reports</a>
                 </c:when>
-                <%-- Consider adding links for other roles or a default --%>
-                <%--
-                <c:otherwise>
-                    <a href="<c:url value='/help.jsp'/>">Help</a>
-                </c:otherwise>
-                --%>
             </c:choose>
 
             <%-- Logout Form and User Info (Floated Right) --%>
-            <%-- Ensure the logout action points to the correct servlet/path handling logout --%>
-            <form class="logout-form" method="post" action="<c:url value='/login'/>"> <%-- Assuming /login handles logout via POST --%>
-                <input type="hidden" name="action" value="logout" /> <%-- Keep hidden field if needed by servlet --%>
-                <button type="submit" class="logout-button">Logout</button> <%-- Styled as button --%>
+            <form class="logout-form" method="post" action="<c:url value='/login'/>">
+                <input type="hidden" name="action" value="logout" />
+                <button type="submit" class="logout-button">Logout</button>
             </form>
             <div class="user-info">
-                Hello, <c:out value="${userInfo.username}" /> (<c:out value="${userInfo.role}" />) <%-- Added Role display --%>
+                Hello, <c:out value="${userInfo.username}" /> (<c:out value="${userInfo.role}" />)
             </div>
 
         </div> <%-- End of menu-bar --%>
 
-        <%-- The rest of your page content would go here --%>
-
     </body>
 </html>
+ 

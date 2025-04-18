@@ -1,5 +1,6 @@
 package ict.db;
 
+import ict.bean.ConsumptionDataBean;
 import java.io.IOException; // Make sure this bean exists if getAggregatedNeedsByCountry is used here
 import java.io.Serializable; // Using BakeryShopBean
 import java.sql.Connection;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 import ict.bean.InventoryBean;
 import ict.bean.ReservationBean;
 import ict.bean.WarehouseBean;
+import java.sql.Date;
 
 /**
  * Handles database operations related to borrowing fruits between shops,
@@ -687,6 +689,70 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         } finally {
             closeQuietly(ps);
         }
-    }
+    }        // Add this method inside your existing ReservationDB class
+
+        /**
+         * Calculates total fulfilled reservation quantity per fruit within a date range.
+         *
+         * @param startDate The start date of the period (inclusive).
+         * @param endDate   The end date of the period (inclusive).
+         * @return A list of ConsumptionDataBean objects (itemName = fruitName).
+         */
+        public List<ConsumptionDataBean> getConsumptionSummaryByFruit(Date startDate, Date endDate) {
+            List<ConsumptionDataBean> reportData = new ArrayList<>();
+            // SQL to sum fulfilled reservations by fruit within the date range
+            String sql = "SELECT f.fruit_name, SUM(r.quantity) as total_consumed " +
+                         "FROM reservations r " +
+                         "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                         "WHERE r.status = 'Fulfilled' AND r.reservation_date BETWEEN ? AND ? " +
+                         "GROUP BY f.fruit_name " +
+                         "ORDER BY total_consumed DESC";
+
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+
+            // Default date range if null (e.g., last 30 days) - requires more logic
+            // For simplicity, assume valid dates are passed for now.
+            if (startDate == null || endDate == null) {
+                 LOGGER.log(Level.WARNING, "Start date or end date is null for consumption report.");
+                 // Handle default dates or return empty list
+                 // Example: Set default range (more robust date logic needed)
+                 // Calendar cal = Calendar.getInstance();
+                 // if (endDate == null) endDate = new Date(cal.getTimeInMillis());
+                 // cal.add(Calendar.DAY_OF_MONTH, -30);
+                 // if (startDate == null) startDate = new Date(cal.getTimeInMillis());
+                 return reportData; // Return empty for now if dates are null
+            }
+
+
+            try {
+                conn = getConnection();
+                ps = conn.prepareStatement(sql);
+                ps.setDate(1, startDate);
+                ps.setDate(2, endDate);
+                rs = ps.executeQuery();
+
+                while (rs.next()) {
+                    String fruitName = rs.getString("fruit_name");
+                    long totalConsumed = rs.getLong("total_consumed");
+                    reportData.add(new ConsumptionDataBean(fruitName, totalConsumed));
+                }
+                LOGGER.log(Level.INFO, "Fetched {0} rows for consumption summary by fruit between {1} and {2}",
+                           new Object[]{reportData.size(), startDate, endDate});
+
+            } catch (SQLException | IOException e) {
+                LOGGER.log(Level.SEVERE, "Error fetching consumption summary by fruit", e);
+            } finally {
+                closeQuietly(rs);
+                closeQuietly(ps);
+                closeQuietly(conn);
+            }
+            return reportData;
+        }
+
+        // --- Add other report methods as needed (e.g., getConsumptionByShop) ---
+
+    
 
 } // End of BorrowingDB class

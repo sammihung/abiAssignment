@@ -3,6 +3,7 @@ C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\ja
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\DeleteUsersController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\bean\BakeryShopBean.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\assignment\resources\JakartaEE10Resource.java
+C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\ConsumptionReportController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\UpdateInventoryController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\FruitController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\db\BorrowingDB.java
@@ -20,6 +21,7 @@ C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\ja
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\bean\FruitBean.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\db\BakeryShopDB.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\bean\AggregatedNeedBean.java
+C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\bean\ConsumptionDataBean.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\BorrowingController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\CheckoutToShopController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\UpdateWarehouseInventoryController.java
@@ -31,3 +33,4 @@ C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\ja
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\ReservationController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\ArrangeDeliveryController.java
 C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\NeedsApprovalController.java
+C:\Users\sherm\OneDrive\圖片\文件\NetBeansProjects\abiAssignment\src\main\java\ict\servlet\AdvancedReportController.java

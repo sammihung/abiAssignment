@@ -1,6 +1,7 @@
 package ict.db;
 
 import ict.bean.AggregatedNeedBean;
+import ict.bean.ConsumptionDataBean;
 import ict.bean.FruitBean; // Assuming FruitDB is available
 import ict.bean.ReservationBean;
 
@@ -846,7 +847,69 @@ public class ReservationDB {
         }
         return quantity;
     }
+    // Add this method inside your existing ReservationDB class
 
+    /**
+     * Calculates total fulfilled reservation quantity per fruit within a date
+     * range.
+     *
+     * @param startDate The start date of the period (inclusive).
+     * @param endDate The end date of the period (inclusive).
+     * @return A list of ConsumptionDataBean objects (itemName = fruitName).
+     */
+    public List<ConsumptionDataBean> getConsumptionSummaryByFruit(Date startDate, Date endDate) {
+        List<ConsumptionDataBean> reportData = new ArrayList<>();
+        // SQL to sum fulfilled reservations by fruit within the date range
+        String sql = "SELECT f.fruit_name, SUM(r.quantity) as total_consumed "
+                + "FROM reservations r "
+                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
+                + "WHERE r.status = 'Fulfilled' AND r.reservation_date BETWEEN ? AND ? "
+                + "GROUP BY f.fruit_name "
+                + "ORDER BY total_consumed DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        // Default date range if null (e.g., last 30 days) - requires more logic
+        // For simplicity, assume valid dates are passed for now.
+        if (startDate == null || endDate == null) {
+            LOGGER.log(Level.WARNING, "Start date or end date is null for consumption report.");
+            // Handle default dates or return empty list
+            // Example: Set default range (more robust date logic needed)
+            // Calendar cal = Calendar.getInstance();
+            // if (endDate == null) endDate = new Date(cal.getTimeInMillis());
+            // cal.add(Calendar.DAY_OF_MONTH, -30);
+            // if (startDate == null) startDate = new Date(cal.getTimeInMillis());
+            return reportData; // Return empty for now if dates are null
+        }
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String fruitName = rs.getString("fruit_name");
+                long totalConsumed = rs.getLong("total_consumed");
+                reportData.add(new ConsumptionDataBean(fruitName, totalConsumed));
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for consumption summary by fruit between {1} and {2}",
+                    new Object[]{reportData.size(), startDate, endDate});
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching consumption summary by fruit", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return reportData;
+    }
+
+    // --- Add other report methods as needed (e.g., getConsumptionByShop) ---
     /**
      * Updates the inventory quantity for a specific fruit in a specific
      * warehouse. Assumes the inventory record exists and shop_id is NULL. To be
@@ -897,6 +960,222 @@ public class ReservationDB {
             // IMPORTANT: Only close PreparedStatement here, NOT the connection
             closeQuietly(ps);
         }
+    }    // Add these methods inside your existing ReservationDB class
+    // Assuming access to FruitDB, ShopDB/BakeryShopDB
+
+    /**
+     * Bean to hold aggregated needs data. Reusing AggregatedNeedBean from
+     * needsApproval feature, ensure it's accessible. If not present, define it:
+     * public static class AggregatedNeedBean implements Serializable { private
+     * String sourceCountry; // Or filter dimension (Shop Name, City) private
+     * int fruitId; private String fruitName; private int totalNeededQuantity;
+     * // Getters & Setters... }
+     */
+    /**
+     * Gets aggregated pending/approved needs based on different filters.
+     *
+     * @param filterType "shop", "city", or "country".
+     * @param filterValue The specific shop ID, city name, or country name.
+     * @param startDate Start date for filtering reservations.
+     * @param endDate End date for filtering reservations.
+     * @return List of AggregatedNeedBean.
+     */
+    public List<AggregatedNeedBean> getAggregatedNeeds(String filterType, String filterValue, Date startDate, Date endDate) {
+        List<AggregatedNeedBean> needs = new ArrayList<>();
+        StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT f.fruit_name, f.fruit_id, SUM(r.quantity) AS total_needed_quantity "
+                + "FROM reservations r "
+                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
+        );
+        List<Object> params = new ArrayList<>();
+
+        // Add join and filter based on type
+        if ("shop".equals(filterType) || "city".equals(filterType) || "country".equals(filterType)) {
+            sqlBuilder.append("JOIN shops s ON r.shop_id = s.shop_id ");
+            if ("shop".equals(filterType)) {
+                sqlBuilder.append("WHERE r.shop_id = ? ");
+                try {
+                    params.add(Integer.parseInt(filterValue));
+                } catch (NumberFormatException e) {
+                    return needs;
+                    /* Invalid shop ID */ }
+            } else if ("city".equals(filterType)) {
+                sqlBuilder.append("WHERE s.city = ? ");
+                params.add(filterValue);
+            } else { // country
+                sqlBuilder.append("WHERE s.country = ? ");
+                params.add(filterValue);
+            }
+        } else {
+            // No filter or invalid filter type - maybe return all needs? Or empty?
+            // Let's add a default condition that always needs status and date range
+            sqlBuilder.append("WHERE 1=1 "); // Placeholder if no spatial filter
+        }
+
+        // Add status and date filters
+        sqlBuilder.append("AND r.status IN ('Pending', 'Approved') "); // Needs are pending or approved
+        sqlBuilder.append("AND r.reservation_date BETWEEN ? AND ? ");
+        params.add(startDate);
+        params.add(endDate);
+
+        sqlBuilder.append("GROUP BY f.fruit_name, f.fruit_id ");
+        sqlBuilder.append("ORDER BY f.fruit_name");
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sqlBuilder.toString());
+            // Set parameters
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                AggregatedNeedBean need = new AggregatedNeedBean();
+                need.setFruitId(rs.getInt("fruit_id"));
+                need.setFruitName(rs.getString("fruit_name"));
+                need.setTotalNeededQuantity(rs.getInt("total_needed_quantity"));
+                // Optional: Set sourceCountry or filter dimension if needed for display
+                // need.setSourceCountry(filterValue); // Example if filtering by country
+                needs.add(need);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} aggregated needs for filter [{1}={2}]", new Object[]{needs.size(), filterType, filterValue});
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching aggregated needs", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return needs;
+    }
+
+    /**
+     * Bean to hold seasonal consumption data.
+     */
+    public static class SeasonalConsumptionBean implements Serializable {
+
+        private String season;
+        private String fruitName;
+        private long totalConsumedQuantity;
+
+        // Getters & Setters...
+        public String getSeason() {
+            return season;
+        }
+
+        public void setSeason(String s) {
+            this.season = s;
+        }
+
+        public String getFruitName() {
+            return fruitName;
+        }
+
+        public void setFruitName(String n) {
+            this.fruitName = n;
+        }
+
+        public long getTotalConsumedQuantity() {
+            return totalConsumedQuantity;
+        }
+
+        public void setTotalConsumedQuantity(long q) {
+            this.totalConsumedQuantity = q;
+        }
+    }
+
+    /**
+     * Gets seasonal consumption ('Fulfilled' reservations) based on filters.
+     *
+     * @param filterType "shop", "city", or "country".
+     * @param filterValue The specific shop ID, city name, or country name.
+     * @param startDate Start date for filtering reservations.
+     * @param endDate End date for filtering reservations.
+     * @return List of SeasonalConsumptionBean.
+     */
+    public List<SeasonalConsumptionBean> getSeasonalConsumption(String filterType, String filterValue, Date startDate, Date endDate) {
+        List<SeasonalConsumptionBean> consumption = new ArrayList<>();
+        StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT "
+                + "  CASE "
+                + // Define seasons (adjust months as needed for location/fiscal year)
+                "    WHEN MONTH(r.reservation_date) IN (3, 4, 5) THEN 'Spring' "
+                + "    WHEN MONTH(r.reservation_date) IN (6, 7, 8) THEN 'Summer' "
+                + "    WHEN MONTH(r.reservation_date) IN (9, 10, 11) THEN 'Autumn' "
+                + "    ELSE 'Winter' "
+                + // Dec, Jan, Feb
+                "  END AS season, "
+                + "  f.fruit_name, "
+                + "  SUM(r.quantity) as total_consumed "
+                + "FROM reservations r "
+                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
+        );
+        List<Object> params = new ArrayList<>();
+
+        // Add join and filter based on type
+        if ("shop".equals(filterType) || "city".equals(filterType) || "country".equals(filterType)) {
+            sqlBuilder.append("JOIN shops s ON r.shop_id = s.shop_id ");
+            if ("shop".equals(filterType)) {
+                sqlBuilder.append("WHERE s.shop_id = ? "); // Filter by shop ID
+                try {
+                    params.add(Integer.parseInt(filterValue));
+                } catch (NumberFormatException e) {
+                    return consumption;
+                }
+            } else if ("city".equals(filterType)) {
+                sqlBuilder.append("WHERE s.city = ? "); // Filter by city
+                params.add(filterValue);
+            } else { // country
+                sqlBuilder.append("WHERE s.country = ? "); // Filter by country
+                params.add(filterValue);
+            }
+        } else {
+            sqlBuilder.append("WHERE 1=1 "); // Placeholder if no spatial filter
+        }
+
+        // Add status and date filters
+        sqlBuilder.append("AND r.status = 'Fulfilled' "); // Consumption = Fulfilled
+        sqlBuilder.append("AND r.reservation_date BETWEEN ? AND ? ");
+        params.add(startDate);
+        params.add(endDate);
+
+        sqlBuilder.append("GROUP BY season, f.fruit_name ");
+        sqlBuilder.append("ORDER BY FIELD(season, 'Spring', 'Summer', 'Autumn', 'Winter'), f.fruit_name"); // Order seasons correctly
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sqlBuilder.toString());
+            // Set parameters
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                SeasonalConsumptionBean item = new SeasonalConsumptionBean();
+                item.setSeason(rs.getString("season"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalConsumedQuantity(rs.getLong("total_consumed"));
+                consumption.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} seasonal consumption rows for filter [{1}={2}]", new Object[]{consumption.size(), filterType, filterValue});
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching seasonal consumption", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return consumption;
     }
 
 }

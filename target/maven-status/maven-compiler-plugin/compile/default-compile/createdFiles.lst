@@ -2,6 +2,7 @@ ict\db\BorrowingDB$DeliveryNeedBean.class
 ict\db\BorrowingDB.class
 ict\db\WarehouseDB.class
 ict\servlet\ListUsersController.class
+ict\servlet\AdvancedReportController.class
 ict\bean\ReservationBean.class
 ict\bean\BorrowingBean.class
 ict\servlet\assignment\JakartaRestConfiguration.class
@@ -11,6 +12,8 @@ ict\db\UserDB.class
 ict\servlet\DeleteFruitController.class
 ict\servlet\LoginController.class
 ict\db\BakeryShopDB.class
+ict\bean\ConsumptionDataBean.class
+ict\servlet\ConsumptionReportController.class
 ict\servlet\ListReservationsController.class
 ict\db\ReservationDB$DeliveryNeedBean.class
 ict\bean\UserBean.class
@@ -30,6 +33,7 @@ ict\servlet\ArrangeDeliveryController.class
 ict\servlet\ListFruitsController.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class
+ict\db\ReservationDB$SeasonalConsumptionBean.class
 ict\servlet\UpdateInventoryController.class
 ict\servlet\UpdateUserController.class
 ict\bean\AggregatedNeedBean.class
