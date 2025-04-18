@@ -74,12 +74,14 @@
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/reserveFruit'/>">Reserve Fruit</a>
                     <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
-                     <%-- Link to View Reservations page --%>
                     <a href="<c:url value='/listReservations'/>">View Reservations</a>
+                     <%-- Link to Update Inventory page --%>
+                    <a href="<c:url value='/updateInventory'/>">Update Inventory</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <%-- Warehouse staff might need other links, e.g., manage deliveries, inventory --%>
+                    <%-- <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a> --%>
                     <%-- <a href="<c:url value='/manageDeliveries'/>">Manage Deliveries</a> --%>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
@@ -87,7 +89,6 @@
                     <a href="<c:url value='/manageUsers.jsp'/>">Manage Users</a>
                      <%-- Management might need overview links --%>
                      <%-- <a href="<c:url value='/viewReports'/>">View Reports</a> --%>
-                     <%-- Management might want to see ALL reservations --%>
                      <%-- <a href="<c:url value='/listAllReservations'/>">View All Reservations</a> --%>
                 </c:when>
                 <%-- Consider adding links for other roles or a default --%>

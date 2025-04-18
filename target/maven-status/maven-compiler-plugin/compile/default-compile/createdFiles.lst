@@ -24,4 +24,5 @@ ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\ListFruitsController.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class
+ict\servlet\UpdateInventoryController.class
 ict\servlet\UpdateUserController.class
