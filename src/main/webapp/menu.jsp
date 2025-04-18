@@ -1,11 +1,11 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page %> <%-- Removed conflicting contentType attribute --%>
 <%-- Assuming checkLogin.jsp verifies session and userInfo bean exists --%>
 <%@ include file="checkLogin.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <%-- Keep meta tag for browser --%>
         <title>Menu</title>
         <style>
             body {
@@ -80,10 +80,9 @@
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a>
-                     <%-- Link to Approve Needs page --%>
                     <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
-                    <%-- Other potential links for warehouse staff --%>
-                    <%-- <a href="<c:url value='/manageDeliveries'/>">Manage Deliveries</a> --%>
+                     <%-- Link to Arrange Delivery page --%>
+                    <a href="<c:url value='/arrangeDelivery'/>">Arrange Delivery</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <%-- Assuming manageUsers.jsp exists --%>
@@ -92,6 +91,7 @@
                      <%-- <a href="<c:url value='/viewReports'/>">View Reports</a> --%>
                      <%-- <a href="<c:url value='/listAllReservations'/>">View All Reservations</a> --%>
                      <%-- <a href="<c:url value='/viewAllInventory'/>">View All Inventory</a> --%>
+                     <%-- <a href="<c:url value='/viewDeliveries'/>">View Deliveries</a> --%>
                 </c:when>
                 <%-- Consider adding links for other roles or a default --%>
                 <%--

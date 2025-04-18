@@ -11,6 +11,7 @@ ict\servlet\DeleteFruitController.class
 ict\servlet\LoginController.class
 ict\db\BakeryShopDB.class
 ict\servlet\ListReservationsController.class
+ict\db\ReservationDB$DeliveryNeedBean.class
 ict\bean\UserBean.class
 ict\servlet\NeedsApprovalController.class
 ict\bean\WarehouseBean.class
@@ -23,6 +24,7 @@ ict\servlet\BorrowingController.class
 ict\bean\InventoryBean.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\UpdateWarehouseInventoryController.class
+ict\servlet\ArrangeDeliveryController.class
 ict\servlet\ListFruitsController.class
 ict\servlet\RegisterController.class
 ict\servlet\DeleteUsersController.class

@@ -88,6 +88,15 @@
         <url-pattern>/needsApproval</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>ArrangeDeliveryController</servlet-name>
+        <servlet-class>ict.servlet.ArrangeDeliveryController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ArrangeDeliveryController</servlet-name>
+        <url-pattern>/arrangeDelivery</url-pattern>
+    </servlet-mapping>
+    
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
