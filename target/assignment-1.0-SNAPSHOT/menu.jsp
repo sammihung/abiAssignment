@@ -73,8 +73,9 @@
                      <%-- Assuming shop staff might need to register something else? Or maybe this link is misplaced? --%>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/reserveFruit'/>">Reserve Fruit</a>
-                    <%-- ADDED: Link to Borrow Fruit page --%>
                     <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
+                     <%-- Link to View Reservations page --%>
+                    <a href="<c:url value='/listReservations'/>">View Reservations</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>
@@ -86,6 +87,8 @@
                     <a href="<c:url value='/manageUsers.jsp'/>">Manage Users</a>
                      <%-- Management might need overview links --%>
                      <%-- <a href="<c:url value='/viewReports'/>">View Reports</a> --%>
+                     <%-- Management might want to see ALL reservations --%>
+                     <%-- <a href="<c:url value='/listAllReservations'/>">View All Reservations</a> --%>
                 </c:when>
                 <%-- Consider adding links for other roles or a default --%>
                 <%--

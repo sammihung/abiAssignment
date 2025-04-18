@@ -310,5 +310,52 @@ public class ReservationDB {
          }
          return reservations;
      }
+         // Add this method inside your existing ReservationDB class
+
+    /**
+     * Retrieves all reservations made by a specific shop.
+     *
+     * @param shopId The ID of the shop whose reservations are to be fetched.
+     * @return A List of ReservationBean objects, potentially including joined data.
+     */
+    public List<ReservationBean> getReservationsForShop(int shopId) {
+        List<ReservationBean> reservations = new ArrayList<>();
+        // SQL to fetch reservations for a specific shop, joining with fruits for the name
+        String sql = "SELECT r.*, f.fruit_name " +
+                     "FROM reservations r " +
+                     "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                     "WHERE r.shop_id = ? " +
+                     "ORDER BY r.reservation_date DESC, r.reservation_id DESC";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection(); // Use existing method
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, shopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                ReservationBean bean = new ReservationBean();
+                bean.setReservationId(rs.getInt("reservation_id"));
+                bean.setFruitId(rs.getInt("fruit_id"));
+                bean.setShopId(rs.getInt("shop_id")); // Keep shopId even if filtering by it
+                bean.setQuantity(rs.getInt("quantity"));
+                bean.setReservationDate(rs.getDate("reservation_date"));
+                bean.setStatus(rs.getString("status"));
+                bean.setFruitName(rs.getString("fruit_name")); // From join
+                // We don't need shop name here as we are filtering by shopId
+                reservations.add(bean);
+            }
+             LOGGER.log(Level.INFO, "Fetched {0} reservations for ShopID={1}", new Object[]{reservations.size(), shopId});
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching reservations for shop " + shopId, e);
+        } finally {
+            closeQuietly(rs); // Use existing helper
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return reservations;
+    }
+
 
 }
