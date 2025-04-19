@@ -12,7 +12,6 @@
         <servlet-name>FruitController</servlet-name>
         <servlet-class>ict.servlet.FruitController</servlet-class>
     </servlet>
-
     <servlet>
         <servlet-name>ListFruitsController</servlet-name>
         <servlet-class>ict.servlet.ListFruitsController</servlet-class>
@@ -29,7 +28,6 @@
         <servlet-name>UpdateFruitController</servlet-name>
         <url-pattern>/updateFruit</url-pattern>
     </servlet-mapping>
-
     <servlet>
         <servlet-name>DeleteFruitController</servlet-name>
         <servlet-class>ict.servlet.DeleteFruitController</servlet-class>
@@ -46,12 +44,10 @@
         <servlet-name>ReservationController</servlet-name>
         <url-pattern>/reserveFruit</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>ListFruitsController</servlet-name>
-        <url-pattern>/listFruits</url-pattern> 
+        <url-pattern>/listFruits</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>ListReservationsController</servlet-name>
         <servlet-class>ict.servlet.ListReservationsController</servlet-class>
@@ -60,7 +56,6 @@
         <servlet-name>ListReservationsController</servlet-name>
         <url-pattern>/listReservations</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>UpdateInventoryController</servlet-name>
         <servlet-class>ict.servlet.UpdateInventoryController</servlet-class>
@@ -69,7 +64,6 @@
         <servlet-name>UpdateInventoryController</servlet-name>
         <url-pattern>/updateInventory</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>UpdateWarehouseInventoryController</servlet-name>
         <servlet-class>ict.servlet.UpdateWarehouseInventoryController</servlet-class>
@@ -78,7 +72,6 @@
         <servlet-name>UpdateWarehouseInventoryController</servlet-name>
         <url-pattern>/updateWarehouseInventory</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>NeedsApprovalController</servlet-name>
         <servlet-class>ict.servlet.NeedsApprovalController</servlet-class>
@@ -87,7 +80,6 @@
         <servlet-name>NeedsApprovalController</servlet-name>
         <url-pattern>/needsApproval</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>ArrangeDeliveryController</servlet-name>
         <servlet-class>ict.servlet.ArrangeDeliveryController</servlet-class>
@@ -96,7 +88,6 @@
         <servlet-name>ArrangeDeliveryController</servlet-name>
         <url-pattern>/arrangeDelivery</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>CheckoutToShopController</servlet-name>
         <servlet-class>ict.servlet.CheckoutToShopController</servlet-class>
@@ -105,7 +96,6 @@
         <servlet-name>CheckoutToShopController</servlet-name>
         <url-pattern>/checkoutToShop</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>ConsumptionReportController</servlet-name>
         <servlet-class>ict.servlet.ConsumptionReportController</servlet-class>
@@ -114,7 +104,6 @@
         <servlet-name>ConsumptionReportController</servlet-name>
         <url-pattern>/viewConsumptionReport</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>AdvancedReportController</servlet-name>
         <servlet-class>ict.servlet.AdvancedReportController</servlet-class>
@@ -123,7 +112,6 @@
         <servlet-name>AdvancedReportController</servlet-name>
         <url-pattern>/viewAdvancedReport</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>InventoryReportController</servlet-name>
         <servlet-class>ict.servlet.InventoryReportController</servlet-class>
@@ -132,7 +120,22 @@
         <servlet-name>InventoryReportController</servlet-name>
         <url-pattern>/viewInventoryReport</url-pattern>
     </servlet-mapping>
-    
+    <servlet>
+        <servlet-name>ListBorrowingsController</servlet-name>
+        <servlet-class>ict.servlet.ListBorrowingsController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ListBorrowingsController</servlet-name>
+        <url-pattern>/listBorrowings</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>ListDeliveriesController</servlet-name>
+        <servlet-class>ict.servlet.ListDeliveriesController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ListDeliveriesController</servlet-name>
+        <url-pattern>/listDeliveries</url-pattern>
+    </servlet-mapping>
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>

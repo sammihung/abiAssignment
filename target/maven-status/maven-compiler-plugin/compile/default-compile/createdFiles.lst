@@ -4,6 +4,7 @@ ict\db\WarehouseDB.class
 ict\servlet\ListUsersController.class
 ict\bean\InventorySummaryBean.class
 ict\servlet\AdvancedReportController.class
+ict\servlet\ListDeliveriesController.class
 ict\bean\ReservationBean.class
 ict\bean\BorrowingBean.class
 ict\servlet\assignment\JakartaRestConfiguration.class
@@ -20,6 +21,7 @@ ict\servlet\ListReservationsController.class
 ict\db\ReservationDB$DeliveryNeedBean.class
 ict\bean\UserBean.class
 ict\servlet\NeedsApprovalController.class
+ict\servlet\ListBorrowingsController.class
 ict\bean\WarehouseBean.class
 ict\db\FruitDB.class
 ict\servlet\CheckoutToShopController.class
@@ -27,7 +29,9 @@ ict\db\ReservationDB.class
 ict\servlet\FruitController.class
 ict\bean\BakeryShopBean.class
 ict\servlet\ReservationController.class
+ict\db\DeliveryDB.class
 ict\servlet\BorrowingController.class
+ict\bean\DeliveryBean.class
 ict\bean\InventoryBean.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\UpdateWarehouseInventoryController.class

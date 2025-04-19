@@ -73,6 +73,7 @@
                     <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
                     <a href="<c:url value='/listReservations'/>">View Reservations</a>
                     <a href="<c:url value='/updateInventory'/>">Update Inventory</a>
+                    <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
                     <a href="<c:url value='/register.jsp'/>">Register</a>
@@ -80,13 +81,15 @@
                     <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
                     <a href="<c:url value='/arrangeDelivery'/>">Arrange Delivery</a>
                     <a href="<c:url value='/checkoutToShop'/>">Checkout to Shops</a>
+                    <a href="<c:url value='/listDeliveries'/>">View Deliveries</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <a href="<c:url value='/listUsers'/>">Manage Users</a>
                     <a href="<c:url value='/listFruits'/>">Manage Fruit Types</a>
                     <a href="<c:url value='/viewAdvancedReport'/>">Advanced Reports</a>
-                    <%-- Link to Inventory Report --%>
                     <a href="<c:url value='/viewInventoryReport'/>">Inventory Report</a>
+                    <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
+                    <a href="<c:url value='/listDeliveries'/>">View Deliveries</a>
                 </c:when>
             </c:choose>
 

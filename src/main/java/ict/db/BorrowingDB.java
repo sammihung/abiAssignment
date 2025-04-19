@@ -1,25 +1,26 @@
 package ict.db;
 
-import ict.bean.ConsumptionDataBean;
-import java.io.IOException; // Make sure this bean exists if getAggregatedNeedsByCountry is used here
-import java.io.Serializable; // Using BakeryShopBean
-import java.sql.Connection;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.Connection; // Make sure this bean exists if getAggregatedNeedsByCountry is used here
+import java.sql.Date; // Using BakeryShopBean
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException; // Need this for WarehouseDB dependency
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.util.ArrayList; // Need this for WarehouseDB dependency
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ict.bean.BorrowingBean;
+import ict.bean.ConsumptionDataBean;
 import ict.bean.InventoryBean;
 import ict.bean.InventorySummaryBean;
 import ict.bean.ReservationBean;
 import ict.bean.WarehouseBean;
-import java.sql.Date;
 
 /**
  * Handles database operations related to borrowing fruits between shops,
@@ -690,74 +691,75 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         } finally {
             closeQuietly(ps);
         }
-    }        // Add this method inside your existing ReservationDB class
-
-        /**
-         * Calculates total fulfilled reservation quantity per fruit within a date range.
-         *
-         * @param startDate The start date of the period (inclusive).
-         * @param endDate   The end date of the period (inclusive).
-         * @return A list of ConsumptionDataBean objects (itemName = fruitName).
-         */
-        public List<ConsumptionDataBean> getConsumptionSummaryByFruit(Date startDate, Date endDate) {
-            List<ConsumptionDataBean> reportData = new ArrayList<>();
-            // SQL to sum fulfilled reservations by fruit within the date range
-            String sql = "SELECT f.fruit_name, SUM(r.quantity) as total_consumed " +
-                         "FROM reservations r " +
-                         "JOIN fruits f ON r.fruit_id = f.fruit_id " +
-                         "WHERE r.status = 'Fulfilled' AND r.reservation_date BETWEEN ? AND ? " +
-                         "GROUP BY f.fruit_name " +
-                         "ORDER BY total_consumed DESC";
-
-            Connection conn = null;
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-
-            // Default date range if null (e.g., last 30 days) - requires more logic
-            // For simplicity, assume valid dates are passed for now.
-            if (startDate == null || endDate == null) {
-                 LOGGER.log(Level.WARNING, "Start date or end date is null for consumption report.");
-                 // Handle default dates or return empty list
-                 // Example: Set default range (more robust date logic needed)
-                 // Calendar cal = Calendar.getInstance();
-                 // if (endDate == null) endDate = new Date(cal.getTimeInMillis());
-                 // cal.add(Calendar.DAY_OF_MONTH, -30);
-                 // if (startDate == null) startDate = new Date(cal.getTimeInMillis());
-                 return reportData; // Return empty for now if dates are null
-            }
-
-
-            try {
-                conn = getConnection();
-                ps = conn.prepareStatement(sql);
-                ps.setDate(1, startDate);
-                ps.setDate(2, endDate);
-                rs = ps.executeQuery();
-
-                while (rs.next()) {
-                    String fruitName = rs.getString("fruit_name");
-                    long totalConsumed = rs.getLong("total_consumed");
-                    reportData.add(new ConsumptionDataBean(fruitName, totalConsumed));
-                }
-                LOGGER.log(Level.INFO, "Fetched {0} rows for consumption summary by fruit between {1} and {2}",
-                           new Object[]{reportData.size(), startDate, endDate});
-
-            } catch (SQLException | IOException e) {
-                LOGGER.log(Level.SEVERE, "Error fetching consumption summary by fruit", e);
-            } finally {
-                closeQuietly(rs);
-                closeQuietly(ps);
-                closeQuietly(conn);
-            }
-            return reportData;
-        }
-
-        // --- Add other report methods as needed (e.g., getConsumptionByShop) ---
-
-        // Add this method inside your existing BorrowingDB class
+    } // Add this method inside your existing ReservationDB class
 
     /**
-     * Gets the total inventory quantity for each fruit, grouped by the fruit's source country.
+     * Calculates total fulfilled reservation quantity per fruit within a date
+     * range.
+     *
+     * @param startDate The start date of the period (inclusive).
+     * @param endDate   The end date of the period (inclusive).
+     * @return A list of ConsumptionDataBean objects (itemName = fruitName).
+     */
+    public List<ConsumptionDataBean> getConsumptionSummaryByFruit(Date startDate, Date endDate) {
+        List<ConsumptionDataBean> reportData = new ArrayList<>();
+        // SQL to sum fulfilled reservations by fruit within the date range
+        String sql = "SELECT f.fruit_name, SUM(r.quantity) as total_consumed " +
+                "FROM reservations r " +
+                "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                "WHERE r.status = 'Fulfilled' AND r.reservation_date BETWEEN ? AND ? " +
+                "GROUP BY f.fruit_name " +
+                "ORDER BY total_consumed DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        // Default date range if null (e.g., last 30 days) - requires more logic
+        // For simplicity, assume valid dates are passed for now.
+        if (startDate == null || endDate == null) {
+            LOGGER.log(Level.WARNING, "Start date or end date is null for consumption report.");
+            // Handle default dates or return empty list
+            // Example: Set default range (more robust date logic needed)
+            // Calendar cal = Calendar.getInstance();
+            // if (endDate == null) endDate = new Date(cal.getTimeInMillis());
+            // cal.add(Calendar.DAY_OF_MONTH, -30);
+            // if (startDate == null) startDate = new Date(cal.getTimeInMillis());
+            return reportData; // Return empty for now if dates are null
+        }
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String fruitName = rs.getString("fruit_name");
+                long totalConsumed = rs.getLong("total_consumed");
+                reportData.add(new ConsumptionDataBean(fruitName, totalConsumed));
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for consumption summary by fruit between {1} and {2}",
+                    new Object[] { reportData.size(), startDate, endDate });
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching consumption summary by fruit", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return reportData;
+    }
+
+    // --- Add other report methods as needed (e.g., getConsumptionByShop) ---
+
+    // Add this method inside your existing BorrowingDB class
+
+    /**
+     * Gets the total inventory quantity for each fruit, grouped by the fruit's
+     * source country.
      * This sums inventory across ALL locations (shops and warehouses).
      *
      * @return A list of InventorySummaryBean objects.
@@ -766,11 +768,11 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         List<InventorySummaryBean> summaryList = new ArrayList<>();
         // SQL to sum all inventory quantities, grouped by fruit and its source country
         String sql = "SELECT f.source_country, i.fruit_id, f.fruit_name, SUM(i.quantity) AS total_quantity " +
-                     "FROM inventory i " +
-                     "JOIN fruits f ON i.fruit_id = f.fruit_id " +
-                     "GROUP BY f.source_country, i.fruit_id, f.fruit_name " +
-                     "HAVING SUM(i.quantity) > 0 " + // Optional: Only show fruits with stock
-                     "ORDER BY f.source_country, f.fruit_name";
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "GROUP BY f.source_country, i.fruit_id, f.fruit_name " +
+                "HAVING SUM(i.quantity) > 0 " + // Optional: Only show fruits with stock
+                "ORDER BY f.source_country, f.fruit_name";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -801,8 +803,116 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         return summaryList;
     }
 
-    // TODO: Add similar methods for grouping by city (shops/warehouses separately?), etc.
-    // Example: getInventorySummaryByShopCity(), getInventorySummaryByWarehouseCity()
+    // TODO: Add similar methods for grouping by city (shops/warehouses
+    // separately?), etc.
+    // Example: getInventorySummaryByShopCity(),
+    // getInventorySummaryByWarehouseCity()
+    // Add this method inside your existing BorrowingDB class
 
+    /**
+     * Retrieves all borrowing records, including fruit and shop names.
+     * Intended for roles like Senior Management.
+     *
+     * @return A List of BorrowingBean objects.
+     */
+    public List<BorrowingBean> getAllBorrowings() {
+        List<BorrowingBean> borrowings = new ArrayList<>();
+        // SQL joining borrowings with fruits and shops (twice for lender/receiver)
+        String sql = "SELECT b.*, f.fruit_name, " +
+                "       bs.shop_name as borrowing_shop_name, " +
+                "       rs.shop_name as receiving_shop_name " +
+                "FROM borrowings b " +
+                "JOIN fruits f ON b.fruit_id = f.fruit_id " +
+                "JOIN shops bs ON b.borrowing_shop_id = bs.shop_id " + // Lending shop
+                "JOIN shops rs ON b.receiving_shop_id = rs.shop_id " + // Receiving shop
+                "ORDER BY b.borrowing_date DESC, b.borrowing_id DESC";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                BorrowingBean bean = new BorrowingBean();
+                bean.setBorrowingId(rs.getInt("borrowing_id"));
+                bean.setFruitId(rs.getInt("fruit_id"));
+                bean.setBorrowingShopId(rs.getInt("borrowing_shop_id"));
+                bean.setReceivingShopId(rs.getInt("receiving_shop_id"));
+                bean.setQuantity(rs.getInt("quantity"));
+                bean.setBorrowingDate(rs.getDate("borrowing_date"));
+                bean.setStatus(rs.getString("status")); // Assuming status exists based on Approve-Borrow requirement
+                bean.setFruitName(rs.getString("fruit_name"));
+                bean.setBorrowingShopName(rs.getString("borrowing_shop_name"));
+                bean.setReceivingShopName(rs.getString("receiving_shop_name"));
+                borrowings.add(bean);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} total borrowing records.", borrowings.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all borrowings", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return borrowings;
+    }
+    // Add this method inside your existing BorrowingDB class
+
+    /**
+     * Retrieves borrowing records related to a specific shop (either as lender or
+     * receiver).
+     * Includes fruit name and shop names.
+     *
+     * @param shopId The ID of the shop.
+     * @return A List of BorrowingBean objects.
+     */
+    public List<BorrowingBean> getAllBorrowingsForShop(int shopId) {
+        List<BorrowingBean> borrowings = new ArrayList<>();
+        // SQL joining borrowings with fruits and shops (twice for lender/receiver)
+        // Filters where the given shopId is either the lender or the receiver
+        String sql = "SELECT b.*, f.fruit_name, " +
+                "       bs.shop_name as borrowing_shop_name, " +
+                "       rs.shop_name as receiving_shop_name " +
+                "FROM borrowings b " +
+                "JOIN fruits f ON b.fruit_id = f.fruit_id " +
+                "JOIN shops bs ON b.borrowing_shop_id = bs.shop_id " + // Lending shop
+                "JOIN shops rs ON b.receiving_shop_id = rs.shop_id " + // Receiving shop
+                "WHERE b.borrowing_shop_id = ? OR b.receiving_shop_id = ? " + // Filter for the specific shop
+                "ORDER BY b.borrowing_date DESC, b.borrowing_id DESC";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, shopId); // Set shopId for the first placeholder
+            ps.setInt(2, shopId); // Set shopId for the second placeholder
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                BorrowingBean bean = new BorrowingBean();
+                bean.setBorrowingId(rs.getInt("borrowing_id"));
+                bean.setFruitId(rs.getInt("fruit_id"));
+                bean.setBorrowingShopId(rs.getInt("borrowing_shop_id"));
+                bean.setReceivingShopId(rs.getInt("receiving_shop_id"));
+                bean.setQuantity(rs.getInt("quantity"));
+                bean.setBorrowingDate(rs.getDate("borrowing_date"));
+                bean.setStatus(rs.getString("status")); // Assuming status exists
+                bean.setFruitName(rs.getString("fruit_name"));
+                bean.setBorrowingShopName(rs.getString("borrowing_shop_name"));
+                bean.setReceivingShopName(rs.getString("receiving_shop_name"));
+                borrowings.add(bean);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} borrowing records for ShopID={1}",
+                    new Object[] { borrowings.size(), shopId });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching borrowings for shop " + shopId, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return borrowings;
+    }
 
 } // End of BorrowingDB class
