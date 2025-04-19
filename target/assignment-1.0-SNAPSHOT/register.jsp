@@ -67,19 +67,7 @@
         .submit-btn:hover {
             background-color: #0056b3;
         }
-        .footer {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #777777;
-        }
-        .footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
+       
     </style>
 </head>
 <body>
@@ -122,9 +110,7 @@
             </c:choose>
             <button type="submit" class="submit-btn">Register</button>
         </form>
-        <div class="footer">
-            <p>Already have an account? <a href="login.jsp">Login here</a></p>
-        </div>
+  
     </div>
 </body>
 </html>
