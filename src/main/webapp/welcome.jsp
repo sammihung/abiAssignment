@@ -12,8 +12,6 @@
         <c:if test="${not empty param.message}">
             <p style="color: green;">${param.message}</p>
         </c:if>
-        <p>Welcome to the ICT</p>
-        <hr/>
-        <a href="brandController?action=list">getAllBrands</a>
+        
     </body>
 </html>

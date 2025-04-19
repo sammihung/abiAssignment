@@ -1,4 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ include file="menu.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- JSTL Core library --%>
 <%@ page import="ict.bean.UserBean" %> <%-- Import UserBean if needed directly --%>
 
