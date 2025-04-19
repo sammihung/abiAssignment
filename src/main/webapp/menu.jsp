@@ -68,7 +68,6 @@
             <%-- Role-specific links --%>
             <c:choose>
                 <c:when test="${userInfo.role == 'Bakery shop staff'}">
-                     <%-- Assuming shop staff might need to register something else? Or maybe this link is misplaced? --%>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/reserveFruit'/>">Reserve Fruit</a>
                     <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
@@ -85,8 +84,9 @@
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <a href="<c:url value='/listUsers'/>">Manage Users</a>
                     <a href="<c:url value='/listFruits'/>">Manage Fruit Types</a>
-                    <%-- UPDATED Link to Advanced Report --%>
                     <a href="<c:url value='/viewAdvancedReport'/>">Advanced Reports</a>
+                    <%-- Link to Inventory Report --%>
+                    <a href="<c:url value='/viewInventoryReport'/>">Inventory Report</a>
                 </c:when>
             </c:choose>
 
@@ -103,4 +103,3 @@
 
     </body>
 </html>
- 

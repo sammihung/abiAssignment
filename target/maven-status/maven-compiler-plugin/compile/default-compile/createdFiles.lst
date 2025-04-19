@@ -2,10 +2,12 @@ ict\db\BorrowingDB$DeliveryNeedBean.class
 ict\db\BorrowingDB.class
 ict\db\WarehouseDB.class
 ict\servlet\ListUsersController.class
+ict\bean\InventorySummaryBean.class
 ict\servlet\AdvancedReportController.class
 ict\bean\ReservationBean.class
 ict\bean\BorrowingBean.class
 ict\servlet\assignment\JakartaRestConfiguration.class
+ict\servlet\InventoryReportController.class
 ict\servlet\UpdateFruitController.class
 ict\bean\FruitBean.class
 ict\db\UserDB.class

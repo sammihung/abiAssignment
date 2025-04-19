@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ict.bean.InventoryBean;
+import ict.bean.InventorySummaryBean;
 import ict.bean.ReservationBean;
 import ict.bean.WarehouseBean;
 import java.sql.Date;
@@ -753,6 +754,55 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
 
         // --- Add other report methods as needed (e.g., getConsumptionByShop) ---
 
-    
+        // Add this method inside your existing BorrowingDB class
+
+    /**
+     * Gets the total inventory quantity for each fruit, grouped by the fruit's source country.
+     * This sums inventory across ALL locations (shops and warehouses).
+     *
+     * @return A list of InventorySummaryBean objects.
+     */
+    public List<InventorySummaryBean> getInventorySummaryBySourceCountry() {
+        List<InventorySummaryBean> summaryList = new ArrayList<>();
+        // SQL to sum all inventory quantities, grouped by fruit and its source country
+        String sql = "SELECT f.source_country, i.fruit_id, f.fruit_name, SUM(i.quantity) AS total_quantity " +
+                     "FROM inventory i " +
+                     "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                     "GROUP BY f.source_country, i.fruit_id, f.fruit_name " +
+                     "HAVING SUM(i.quantity) > 0 " + // Optional: Only show fruits with stock
+                     "ORDER BY f.source_country, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                InventorySummaryBean item = new InventorySummaryBean();
+                item.setGroupingDimension(rs.getString("source_country")); // Grouping is by country
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalQuantity(rs.getLong("total_quantity"));
+                summaryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for inventory summary by source country.", summaryList.size());
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory summary by source country", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return summaryList;
+    }
+
+    // TODO: Add similar methods for grouping by city (shops/warehouses separately?), etc.
+    // Example: getInventorySummaryByShopCity(), getInventorySummaryByWarehouseCity()
+
 
 } // End of BorrowingDB class
