@@ -1,141 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
-    <servlet>
-        <servlet-name>BorrowingController</servlet-name>
-        <servlet-class>ict.servlet.BorrowingController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BorrowingController</servlet-name>
+
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>ict.servlet.AuthFilter</filter-class> </filter>
+
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/borrowFruit</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>FruitController</servlet-name>
-        <servlet-class>ict.servlet.FruitController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>ListFruitsController</servlet-name>
-        <servlet-class>ict.servlet.ListFruitsController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FruitController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/manageFruits</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>UpdateFruitController</servlet-name>
-        <servlet-class>ict.servlet.UpdateFruitController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UpdateFruitController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/updateFruit</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>DeleteFruitController</servlet-name>
-        <servlet-class>ict.servlet.DeleteFruitController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DeleteFruitController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/deleteFruit</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ReservationController</servlet-name>
-        <servlet-class>ict.servlet.ReservationController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ReservationController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/reserveFruit</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>ListFruitsController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/listFruits</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ListReservationsController</servlet-name>
-        <servlet-class>ict.servlet.ListReservationsController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ListReservationsController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/listReservations</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>UpdateInventoryController</servlet-name>
-        <servlet-class>ict.servlet.UpdateInventoryController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UpdateInventoryController</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/updateInventory</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>UpdateWarehouseInventoryController</servlet-name>
-        <servlet-class>ict.servlet.UpdateWarehouseInventoryController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UpdateWarehouseInventoryController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/updateWarehouseInventory</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>NeedsApprovalController</servlet-name>
-        <servlet-class>ict.servlet.NeedsApprovalController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>NeedsApprovalController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/needsApproval</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ArrangeDeliveryController</servlet-name>
-        <servlet-class>ict.servlet.ArrangeDeliveryController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ArrangeDeliveryController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/arrangeDelivery</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>CheckoutToShopController</servlet-name>
-        <servlet-class>ict.servlet.CheckoutToShopController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CheckoutToShopController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/checkoutToShop</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ConsumptionReportController</servlet-name>
-        <servlet-class>ict.servlet.ConsumptionReportController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ConsumptionReportController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/viewConsumptionReport</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>AdvancedReportController</servlet-name>
-        <servlet-class>ict.servlet.AdvancedReportController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AdvancedReportController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/viewAdvancedReport</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>InventoryReportController</servlet-name>
-        <servlet-class>ict.servlet.InventoryReportController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>InventoryReportController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/viewInventoryReport</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ListBorrowingsController</servlet-name>
-        <servlet-class>ict.servlet.ListBorrowingsController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ListBorrowingsController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/listBorrowings</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>ListDeliveriesController</servlet-name>
-        <servlet-class>ict.servlet.ListDeliveriesController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ListDeliveriesController</servlet-name>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/listDeliveries</url-pattern>
-    </servlet-mapping>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/approveBorrow</url-pattern>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/listUsers</url-pattern>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/updateUser</url-pattern>
+    </filter-mapping>
+     <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/deleteUsers</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/welcome.jsp</url-pattern>
+    </filter-mapping>
     <context-param>
         <param-name>dbUrl</param-name>
         <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
@@ -148,4 +105,9 @@
         <param-name>dbPassword</param-name>
         <param-value/>
     </context-param>
+
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+         </welcome-file-list>
+
 </web-app>

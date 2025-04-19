@@ -31,6 +31,8 @@ ict\bean\BakeryShopBean.class
 ict\servlet\ReservationController.class
 ict\db\DeliveryDB.class
 ict\servlet\BorrowingController.class
+ict\servlet\AuthFilter.class
+ict\servlet\ApproveBorrowController.class
 ict\bean\DeliveryBean.class
 ict\bean\InventoryBean.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
