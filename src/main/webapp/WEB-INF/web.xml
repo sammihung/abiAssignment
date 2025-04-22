@@ -7,107 +7,46 @@
 
     <filter-mapping>
         <filter-name>AuthFilter</filter-name>
-        <url-pattern>/borrowFruit</url-pattern>
+        <url-pattern>/orderFromSource</url-pattern>
     </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/manageFruits</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/updateFruit</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/deleteFruit</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/reserveFruit</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/listFruits</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/listReservations</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/updateInventory</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/updateWarehouseInventory</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/needsApproval</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/arrangeDelivery</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/checkoutToShop</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/viewConsumptionReport</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/viewAdvancedReport</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/viewInventoryReport</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/listBorrowings</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/listDeliveries</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/approveBorrow</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/listUsers</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/updateUser</url-pattern>
-    </filter-mapping>
-     <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/deleteUsers</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/welcome.jsp</url-pattern>
-    </filter-mapping>
-    <context-param>
-        <param-name>dbUrl</param-name>
-        <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
-    </context-param>
-    <context-param>
-        <param-name>dbUser</param-name>
-        <param-value>root</param-value>
-    </context-param>
-    <context-param>
-        <param-name>dbPassword</param-name>
-        <param-value/>
-    </context-param>
 
-    <welcome-file-list>
-        <welcome-file>login.jsp</welcome-file>
-         </welcome-file-list>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/borrowFruit</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/manageFruits</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateFruit</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/deleteFruit</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listFruits</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listReservations</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateInventory</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateWarehouseInventory</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/needsApproval</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/arrangeDelivery</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/checkoutToShop</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewConsumptionReport</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewAdvancedReport</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewInventoryReport</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listBorrowings</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listDeliveries</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/approveBorrow</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listUsers</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateUser</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/deleteUsers</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/welcome.jsp</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listAllInventory</url-pattern> </filter-mapping>
+
+
+    <servlet>
+        <servlet-name>OrderFromSourceController</servlet-name>
+        <servlet-class>ict.servlet.OrderFromSourceController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrderFromSourceController</servlet-name>
+        <url-pattern>/orderFromSource</url-pattern>
+    </servlet-mapping>
+
+    <context-param> <param-name>dbUrl</param-name> <param-value>jdbc:mysql://localhost:3306/aib_db</param-value> </context-param>
+    <context-param> <param-name>dbUser</param-name> <param-value>root</param-value> </context-param>
+    <context-param> <param-name>dbPassword</param-name> <param-value/> </context-param>
+
+    <welcome-file-list> <welcome-file>login.jsp</welcome-file> </welcome-file-list>
 
 </web-app>

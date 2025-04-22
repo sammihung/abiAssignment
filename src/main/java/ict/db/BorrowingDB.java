@@ -17,8 +17,10 @@ import java.util.logging.Logger;
 
 import ict.bean.BorrowingBean;
 import ict.bean.ConsumptionDataBean;
+import ict.bean.FruitBean;
 import ict.bean.InventoryBean;
 import ict.bean.InventorySummaryBean;
+import ict.bean.OrderableFruitBean;
 import ict.bean.ReservationBean;
 import ict.bean.WarehouseBean;
 
@@ -1180,6 +1182,259 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
             closeQuietly(conn);
         }
         return borrowings;
+    } // Add these methods inside your existing BorrowingDB class
+
+    /**
+     * Retrieves a list of all fruits with their available quantity at their
+     * respective
+     * primary source warehouse.
+     *
+     * @return A List of OrderableFruitBean objects.
+     */
+    public List<OrderableFruitBean> getOrderableFruitsFromSource() {
+        List<OrderableFruitBean> orderableFruits = new ArrayList<>();
+        // SQL joins fruits with their source warehouse (is_source=1) and that
+        // warehouse's inventory
+        String sql = "SELECT f.fruit_id, f.fruit_name, f.source_country, " +
+                "       w.warehouse_id AS source_warehouse_id, " +
+                "       COALESCE(inv.quantity, 0) AS available_quantity " + // Show 0 if no inventory record
+                "FROM fruits f " +
+                "JOIN warehouses w ON f.source_country = w.country AND w.is_source = 1 " + // Find the source warehouse
+                "LEFT JOIN inventory inv ON f.fruit_id = inv.fruit_id AND inv.warehouse_id = w.warehouse_id AND inv.shop_id IS NULL "
+                + // LEFT JOIN inventory
+                "ORDER BY f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                OrderableFruitBean bean = new OrderableFruitBean(
+                        rs.getInt("fruit_id"),
+                        rs.getString("fruit_name"),
+                        rs.getString("source_country"),
+                        rs.getInt("available_quantity"),
+                        rs.getInt("source_warehouse_id"));
+                orderableFruits.add(bean);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} orderable fruits from source warehouses.", orderableFruits.size());
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching orderable fruits from source", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return orderableFruits;
+    }
+
+    /**
+     * Creates multiple reservation records from a single order request,
+     * checking inventory and performing operations within a single transaction.
+     * If any item fails (e.g., insufficient stock), the entire transaction is
+     * rolled back.
+     *
+     * @param shopId     The ID of the shop making the reservation.
+     * @param fruitIds   A list of fruit IDs being ordered.
+     * @param quantities A corresponding list of quantities for each fruit ID.
+     * @return A status message indicating success or the reason for failure.
+     */
+    public String createMultipleReservations(int shopId, List<Integer> fruitIds, List<Integer> quantities) {
+        Connection conn = null;
+        String statusMessage = "Order failed: Unknown error.";
+
+        if (fruitIds == null || quantities == null || fruitIds.size() != quantities.size() || fruitIds.isEmpty()) {
+            return "Order failed: Invalid order data provided.";
+        }
+
+        // Basic validation: check for non-positive quantities
+        for (int qty : quantities) {
+            if (qty <= 0) {
+                return "Order failed: All quantities must be positive.";
+            }
+        }
+
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); // Start transaction
+
+            // Process each item in the order
+            for (int i = 0; i < fruitIds.size(); i++) {
+                int fruitId = fruitIds.get(i);
+                int quantity = quantities.get(i);
+
+                // 1. Find the source warehouse for this fruit (re-check within transaction)
+                // We could potentially fetch this once outside, but re-checking is safer.
+                // Using the existing private helper method.
+                int sourceWarehouseId = getSourceWarehouseId(fruitId, conn);
+                if (sourceWarehouseId == -1) {
+                    conn.rollback();
+                    return "Order failed: Could not find source warehouse for Fruit ID " + fruitId + ".";
+                }
+
+                // 2. Check current inventory at the source warehouse
+                // Using the existing private helper method.
+                int currentQuantity = getInventoryQuantityForWarehouse(fruitId, sourceWarehouseId, conn);
+                if (currentQuantity < quantity) {
+                    conn.rollback();
+                    // Fetch fruit name for better error message
+                    String fruitName = fruitDb.getFruitById(fruitId) != null
+                            ? fruitDb.getFruitById(fruitId).getFruitName()
+                            : "ID " + fruitId;
+                    return "Order failed: Insufficient stock for " + fruitName + ". Available: " + currentQuantity
+                            + ", Requested: " + quantity;
+                }
+                LOGGER.log(Level.INFO,
+                        "[TX-MultiOrder] Inventory check passed for FruitID={0}, WarehouseID={1}. Have: {2}, Need: {3}",
+                        new Object[] { fruitId, sourceWarehouseId, currentQuantity, quantity });
+
+                // 3. Add the reservation record (Status: Pending)
+                // Using the existing private helper method.
+                boolean reservationAdded = addReservationRecord(fruitId, shopId, quantity, "Pending", conn);
+                if (!reservationAdded) {
+                    conn.rollback();
+                    return "Order failed: Could not create reservation record for Fruit ID " + fruitId + ".";
+                }
+                LOGGER.log(Level.INFO, "[TX-MultiOrder] Reservation record added for FruitID={0}, ShopID={1}, Qty={2}",
+                        new Object[] { fruitId, shopId, quantity });
+
+                // 4. Update (decrease) the inventory at the source warehouse
+                // Using the existing private helper method.
+                boolean inventoryUpdated = updateWarehouseInventory(fruitId, sourceWarehouseId, -quantity, conn);
+                if (!inventoryUpdated) {
+                    conn.rollback();
+                    return "Order failed: Could not update source inventory for Fruit ID " + fruitId
+                            + ". Stock might have changed.";
+                }
+                LOGGER.log(Level.INFO, "[TX-MultiOrder] Inventory updated for FruitID={0}, WarehouseID={1}, Change={2}",
+                        new Object[] { fruitId, sourceWarehouseId, -quantity });
+
+            } // End loop for each item
+
+            // If all items processed successfully, commit the transaction
+            conn.commit();
+            statusMessage = "Order submitted successfully! " + fruitIds.size() + " item(s) reserved.";
+            LOGGER.log(Level.INFO, "[TX-MultiOrder] Transaction committed for multiple reservations.");
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error during multiple reservation transaction for Shop ID " + shopId, e);
+            statusMessage = "Order failed: Database error occurred.";
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Rollback failed", ex);
+                }
+            }
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to close connection", e);
+                }
+            }
+        }
+        return statusMessage;
+    }
+
+    // --- Ensure these required helper methods exist in this class ---
+    // private int getSourceWarehouseId(int fruitId, Connection conn) throws
+    // SQLException { ... }
+    // private int getInventoryQuantityForWarehouse(int fruitId, int warehouseId,
+    // Connection conn) throws SQLException { ... }
+    // private boolean addReservationRecord(int fruitId, int shopId, int quantity,
+    // String status, Connection conn) throws SQLException { ... }
+    // private boolean updateWarehouseInventory(int fruitId, int warehouseId, int
+    // quantityChange, Connection conn) throws SQLException { ... }
+    /**
+     * Finds the warehouse ID marked as the source for a given fruit's source
+     * country.
+     * Requires the fruitDb field to be initialized.
+     * To be called within a transaction or with a managed connection.
+     *
+     * @param fruitId The ID of the fruit.
+     * @param conn    An existing database connection (should not be closed here).
+     * @return The source warehouse ID, or -1 if not found or if fruit details are
+     *         missing.
+     * @throws SQLException if a database access error occurs.
+     */
+    private int getSourceWarehouseId(int fruitId, Connection conn) throws SQLException {
+        int sourceWarehouseId = -1;
+
+        // Ensure fruitDb is available
+        if (this.fruitDb == null) {
+            LOGGER.log(Level.SEVERE, "FruitDB dependency is null. Cannot get source country for FruitID={0}", fruitId);
+            return -1;
+        }
+
+        // 1. Get the source country of the fruit
+        FruitBean fruit = fruitDb.getFruitById(fruitId); // Uses FruitDB instance
+        if (fruit == null || fruit.getSourceCountry() == null || fruit.getSourceCountry().trim().isEmpty()) {
+            LOGGER.log(Level.WARNING, "Fruit not found or source country missing for fruit ID: {0}", fruitId);
+            return -1; // Cannot proceed without source country
+        }
+        String sourceCountry = fruit.getSourceCountry();
+        LOGGER.log(Level.FINER, "Finding source warehouse for fruit ID {0} from country: {1}",
+                new Object[] { fruitId, sourceCountry });
+
+        // 2. Find the warehouse in that country marked as source
+        String sql = "SELECT warehouse_id FROM warehouses WHERE country = ? AND is_source = 1 LIMIT 1";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, sourceCountry);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                sourceWarehouseId = rs.getInt("warehouse_id");
+                LOGGER.log(Level.FINER, "Source warehouse found: ID={0}", sourceWarehouseId);
+            } else {
+                LOGGER.log(Level.WARNING, "No source warehouse found for country: {0}", sourceCountry);
+            }
+        } finally {
+            // Only close PS and RS, not the connection passed in
+            closeQuietly(rs);
+            closeQuietly(ps);
+        }
+        return sourceWarehouseId;
+    }
+
+    /**
+     * Adds a reservation record to the database with a specified status.
+     * To be called within a transaction.
+     *
+     * @param fruitId  The ID of the fruit.
+     * @param shopId   The ID of the reserving shop.
+     * @param quantity The quantity being reserved.
+     * @param status   The status to set for the reservation (e.g., "Pending").
+     * @param conn     An existing database connection (should not be closed here).
+     * @return true if insertion was successful (1 row affected), false otherwise.
+     * @throws SQLException if a database access error occurs.
+     */
+    private boolean addReservationRecord(int fruitId, int shopId, int quantity, String status, Connection conn)
+            throws SQLException {
+        String sql = "INSERT INTO reservations (fruit_id, shop_id, quantity, reservation_date, status) VALUES (?, ?, ?, CURDATE(), ?)";
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, fruitId);
+            ps.setInt(2, shopId);
+            ps.setInt(3, quantity);
+            ps.setString(4, status); // Use the provided status
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected == 1; // Check if exactly one row was inserted
+        } finally {
+            // Only close PS, not the connection passed in
+            closeQuietly(ps);
+        }
     }
 
 } // End of BorrowingDB class
