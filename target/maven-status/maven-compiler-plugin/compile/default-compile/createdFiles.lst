@@ -17,6 +17,7 @@ ict\servlet\CheckoutToShopController.class
 ict\servlet\FruitController.class
 ict\servlet\BorrowingController.class
 ict\bean\DeliveryBean.class
+ict\servlet\ListAllInventoryController.class
 ict\bean\InventoryBean.class
 ict\servlet\OrderFromSourceController.class
 ict\servlet\UpdateWarehouseInventoryController.class

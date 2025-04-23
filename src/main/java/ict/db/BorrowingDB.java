@@ -1745,5 +1745,63 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         }
         return inventoryList;
     }
+    // Add this method inside your existing BorrowingDB class
+
+    /**
+     * Retrieves all inventory records from all locations (shops and warehouses).
+     * Includes fruit name and location name (shop or warehouse).
+     * Intended for Senior Management.
+     *
+     * @return A list of InventoryBean objects with details populated.
+     */
+    public List<InventoryBean> getAllInventory() {
+        List<InventoryBean> inventoryList = new ArrayList<>();
+        // SQL joins inventory with fruits, shops (LEFT JOIN), and warehouses (LEFT
+        // JOIN)
+        // COALESCE is used to get the name from whichever table (shop/warehouse) is
+        // relevant
+        // CASE statement determines the location type
+        String sql = "SELECT " +
+                "  i.inventory_id, i.fruit_id, i.shop_id, i.warehouse_id, i.quantity, " +
+                "  f.fruit_name, " +
+                "  COALESCE(s.shop_name, w.warehouse_name) AS location_name, " +
+                "  CASE WHEN i.shop_id IS NOT NULL THEN 'Shop' ELSE 'Warehouse' END AS location_type " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "LEFT JOIN shops s ON i.shop_id = s.shop_id " + // LEFT JOIN for warehouse inventory
+                "LEFT JOIN warehouses w ON i.warehouse_id = w.warehouse_id " + // LEFT JOIN for shop inventory
+                "ORDER BY location_type, location_name, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventoryBean item = new InventoryBean();
+                item.setInventoryId(rs.getInt("inventory_id"));
+                item.setFruitId(rs.getInt("fruit_id"));
+                // Use getObject to handle potential NULLs safely
+                item.setShopId(rs.getObject("shop_id") != null ? rs.getInt("shop_id") : null);
+                item.setWarehouseId(rs.getObject("warehouse_id") != null ? rs.getInt("warehouse_id") : null);
+                item.setQuantity(rs.getInt("quantity"));
+                item.setFruitName(rs.getString("fruit_name"));
+                // Combine location name and type for display
+                item.setLocationName(rs.getString("location_name") + " (" + rs.getString("location_type") + ")");
+                inventoryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} total inventory records.", inventoryList.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all inventory records", e);
+        } finally {
+            // Use your existing closeQuietly helper method
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return inventoryList;
+    }
 
 } // End of BorrowingDB class
