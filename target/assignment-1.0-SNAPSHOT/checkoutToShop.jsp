@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
-        body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
+        body { font-family: sans-serif; margin:  0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
         h1 { color: #333; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
