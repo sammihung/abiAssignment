@@ -1436,5 +1436,314 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
             closeQuietly(ps);
         }
     }
+    // Add these methods inside your existing BorrowingDB class
+
+    /**
+     * Gets the total inventory quantity for each fruit, grouped by Shop.
+     *
+     * @return A list of InventorySummaryBean objects.
+     */
+    public List<InventorySummaryBean> getInventorySummaryByShop() {
+        List<InventorySummaryBean> summaryList = new ArrayList<>();
+        // SQL to sum inventory quantities, grouped by fruit and shop
+        String sql = "SELECT s.shop_name, i.fruit_id, f.fruit_name, SUM(i.quantity) AS total_quantity " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "JOIN shops s ON i.shop_id = s.shop_id " + // Only includes shop inventory
+                "WHERE i.shop_id IS NOT NULL " + // Ensure it's shop inventory
+                "GROUP BY s.shop_name, i.fruit_id, f.fruit_name " +
+                "HAVING SUM(i.quantity) > 0 " +
+                "ORDER BY s.shop_name, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventorySummaryBean item = new InventorySummaryBean();
+                item.setGroupingDimension(rs.getString("shop_name")); // Grouping is by shop name
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalQuantity(rs.getLong("total_quantity"));
+                summaryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for inventory summary by shop.", summaryList.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory summary by shop", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return summaryList;
+    }
+
+    /**
+     * Gets the total inventory quantity for each fruit, grouped by City.
+     * This sums inventory across shops and warehouses within the same city.
+     *
+     * @return A list of InventorySummaryBean objects.
+     */
+    public List<InventorySummaryBean> getInventorySummaryByCity() {
+        List<InventorySummaryBean> summaryList = new ArrayList<>();
+        // SQL to sum inventory, grouping by fruit and city (from either shop or
+        // warehouse)
+        String sql = "SELECT " +
+                "  COALESCE(s.city, w.city) AS location_city, " + // Get city from shop or warehouse
+                "  i.fruit_id, " +
+                "  f.fruit_name, " +
+                "  SUM(i.quantity) AS total_quantity " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "LEFT JOIN shops s ON i.shop_id = s.shop_id " +
+                "LEFT JOIN warehouses w ON i.warehouse_id = w.warehouse_id " +
+                "WHERE COALESCE(s.city, w.city) IS NOT NULL " + // Ensure we have a city
+                "GROUP BY location_city, i.fruit_id, f.fruit_name " +
+                "HAVING SUM(i.quantity) > 0 " +
+                "ORDER BY location_city, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventorySummaryBean item = new InventorySummaryBean();
+                item.setGroupingDimension(rs.getString("location_city")); // Grouping is by city
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalQuantity(rs.getLong("total_quantity"));
+                summaryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for inventory summary by city.", summaryList.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory summary by city", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return summaryList;
+    }
+
+    /**
+     * Gets the total inventory quantity for each fruit, grouped by Country.
+     * This sums inventory across shops and warehouses within the same country.
+     * Note: 'Target Country' usually refers to the destination, this groups by the
+     * location's country.
+     *
+     * @return A list of InventorySummaryBean objects.
+     */
+    public List<InventorySummaryBean> getInventorySummaryByCountry() {
+        List<InventorySummaryBean> summaryList = new ArrayList<>();
+        // SQL to sum inventory, grouping by fruit and country (from either shop or
+        // warehouse)
+        String sql = "SELECT " +
+                "  COALESCE(s.country, w.country) AS location_country, " + // Get country from shop or warehouse
+                "  i.fruit_id, " +
+                "  f.fruit_name, " +
+                "  SUM(i.quantity) AS total_quantity " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "LEFT JOIN shops s ON i.shop_id = s.shop_id " +
+                "LEFT JOIN warehouses w ON i.warehouse_id = w.warehouse_id " +
+                "WHERE COALESCE(s.country, w.country) IS NOT NULL " + // Ensure we have a country
+                "GROUP BY location_country, i.fruit_id, f.fruit_name " +
+                "HAVING SUM(i.quantity) > 0 " +
+                "ORDER BY location_country, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventorySummaryBean item = new InventorySummaryBean();
+                item.setGroupingDimension(rs.getString("location_country")); // Grouping is by country
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalQuantity(rs.getLong("total_quantity"));
+                summaryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} rows for inventory summary by country.", summaryList.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory summary by country", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return summaryList;
+    }
+    // Add these methods inside your existing BorrowingDB class
+    // Assume access to bakeryShopDb and warehouseDb
+
+    /**
+     * Gets inventory for all shops within a specific city, excluding the requesting
+     * shop.
+     * Useful for shop staff checking potential borrowing sources.
+     *
+     * @param city             The city to check.
+     * @param requestingShopId The ID of the shop making the request (to exclude).
+     * @return List of InventoryBean objects with fruit and shop names.
+     */
+    public List<InventoryBean> getInventoryForOtherShopsInCity(String city, int requestingShopId) {
+        List<InventoryBean> inventoryList = new ArrayList<>();
+        String sql = "SELECT i.inventory_id, i.fruit_id, i.shop_id, i.quantity, f.fruit_name, s.shop_name " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "JOIN shops s ON i.shop_id = s.shop_id " +
+                "WHERE i.shop_id IS NOT NULL AND s.city = ? AND i.shop_id != ? " + // Filter by city, exclude self
+                "ORDER BY s.shop_name, f.fruit_name";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, city);
+            ps.setInt(2, requestingShopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventoryBean item = new InventoryBean();
+                item.setInventoryId(rs.getInt("inventory_id"));
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setShopId(rs.getInt("shop_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setLocationName(rs.getString("shop_name")); // Use shop name as location
+                inventoryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} inventory items for other shops in city {1}",
+                    new Object[] { inventoryList.size(), city });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching inventory for other shops in city " + city, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return inventoryList;
+    }
+
+    /**
+     * Gets inventory for a specific warehouse by its ID.
+     * Reuses getInventoryForWarehouse but makes it public if needed directly by
+     * servlet,
+     * or keep it private and call via a wrapper if preferred.
+     * This version is public for demonstration.
+     *
+     * @param warehouseId The ID of the warehouse.
+     * @return List of InventoryBean objects.
+     */
+    // Ensure getInventoryForWarehouse is public or create a public wrapper if
+    // needed
+    // public List<InventoryBean> getWarehouseInventoryById(int warehouseId) {
+    // return getInventoryForWarehouse(warehouseId); // Assuming
+    // getInventoryForWarehouse exists
+    // }
+
+    /**
+     * Gets inventory for the primary source warehouse(s) relevant to a specific
+     * country.
+     * (Useful for staff checking source availability).
+     *
+     * @param country The country to find source warehouses for.
+     * @return List of InventoryBean including warehouse name.
+     */
+    public List<InventoryBean> getInventoryForSourceWarehouses(String country) {
+        List<InventoryBean> inventoryList = new ArrayList<>();
+        String sql = "SELECT i.inventory_id, i.fruit_id, i.warehouse_id, i.quantity, f.fruit_name, w.warehouse_name " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "JOIN warehouses w ON i.warehouse_id = w.warehouse_id " +
+                "WHERE i.shop_id IS NULL AND w.country = ? AND w.is_source = 1 " + // Filter by country and source flag
+                "ORDER BY w.warehouse_name, f.fruit_name";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, country);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventoryBean item = new InventoryBean();
+                item.setInventoryId(rs.getInt("inventory_id"));
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setWarehouseId(rs.getInt("warehouse_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setLocationName(rs.getString("warehouse_name") + " (Source)");
+                inventoryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} inventory items for source warehouses in {1}",
+                    new Object[] { inventoryList.size(), country });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching source warehouse inventory for " + country, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return inventoryList;
+    }
+
+    /**
+     * Gets inventory for the central/distribution warehouse(s) in a specific
+     * country.
+     * (Useful for shop staff checking central stock).
+     *
+     * @param country The country to find central warehouses for.
+     * @return List of InventoryBean including warehouse name.
+     */
+    public List<InventoryBean> getInventoryForCentralWarehouses(String country) {
+        List<InventoryBean> inventoryList = new ArrayList<>();
+        String sql = "SELECT i.inventory_id, i.fruit_id, i.warehouse_id, i.quantity, f.fruit_name, w.warehouse_name " +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "JOIN warehouses w ON i.warehouse_id = w.warehouse_id " +
+                "WHERE i.shop_id IS NULL AND w.country = ? AND (w.is_source = 0 OR w.is_source IS NULL) " + // Filter by
+                                                                                                            // country
+                                                                                                            // and
+                                                                                                            // NON-source
+                                                                                                            // flag
+                "ORDER BY w.warehouse_name, f.fruit_name";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, country);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                InventoryBean item = new InventoryBean();
+                item.setInventoryId(rs.getInt("inventory_id"));
+                item.setFruitId(rs.getInt("fruit_id"));
+                item.setWarehouseId(rs.getInt("warehouse_id"));
+                item.setQuantity(rs.getInt("quantity"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setLocationName(rs.getString("warehouse_name") + " (Central)");
+                inventoryList.add(item);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} inventory items for central warehouses in {1}",
+                    new Object[] { inventoryList.size(), country });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching central warehouse inventory for " + country, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return inventoryList;
+    }
 
 } // End of BorrowingDB class

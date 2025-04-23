@@ -8,46 +8,85 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <%-- Keep meta tag for browser --%>
         <title>Menu</title>
         <style>
-            body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
-            .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
-            h1 { color: #333; text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; cursor: pointer; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-            .message, .error-message { padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; }
-            .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-            .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-            .back-link { display: block; text-align: center; margin-top: 20px; }
-            .dataTables_filter, .dataTables_info, .dataTables_paginate { margin-bottom: 15px; }
-            .approve-button { background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
-            .approve-button:hover { background-color: #218838; }
+            body {
+                margin: 0;
+                font-family: sans-serif;
+            } /* Reset body margin */
+            .menu-bar {
+                background-color: #333;
+                overflow: hidden;
+            }
+            .menu-bar a {
+                float: left;
+                display: block;
+                color: #f2f2f2;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+                font-size: 16px; /* Consistent font size */
+            }
+            .menu-bar a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+            .user-info {
+                float: right;
+                color: #f2f2f2;
+                padding: 14px 10px 14px 16px; /* Adjust padding */
+                font-size: 16px; /* Consistent font size */
+            }
+            .logout-form {
+                float: right;
+                margin: 0;
+                padding: 0; /* Remove padding if button provides it */
+            }
+            /* Style the logout button like other menu items */
+            .logout-button {
+                background: none;
+                border: none;
+                color: #f2f2f2;
+                cursor: pointer;
+                font-size: 16px; /* Consistent font size */
+                padding: 14px 16px; /* Match link padding */
+                display: block; /* Make it block */
+                text-align: center;
+                font-family: sans-serif; /* Ensure font matches */
+            }
+            .logout-button:hover {
+                background-color: #ddd;
+                color: black;
+            }
         </style>
     </head>
     <body>
+        <%-- Use jsp:useBean only if checkLogin.jsp doesn't already guarantee its presence --%>
+        <%-- <jsp:useBean id="userInfo" class="ict.bean.UserBean" scope="session" /> --%>
+
         <div class="menu-bar">
             <a href="<c:url value='/welcome.jsp'/>">Home</a>
 
             <%-- Role-specific links --%>
             <c:choose>
                 <c:when test="${userInfo.role == 'Bakery shop staff'}">
+                    <a href="<c:url value='/listFruits'/>">View Fruits</a>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
-                    <%-- ***** MODIFIED LINE BELOW ***** --%>
-                    <a href="<c:url value='/orderFromSource'/>">Order from Source</a> <%-- Was /reserveFruit --%>
-                    <%-- ***** END OF MODIFIED LINE ***** --%>
+                    <a href="<c:url value='/orderFromSource'/>">Order from Source</a>
                     <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
                     <a href="<c:url value='/listReservations'/>">View Reservations</a>
                     <a href="<c:url value='/updateInventory'/>">Update Inventory</a>
                     <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
                     <a href="<c:url value='/approveBorrow'/>">Approve Borrow Requests</a>
+                    <a href="<c:url value='/viewStaffStock'/>">Stock Overview</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Warehouse Staff'}">
+                    <a href="<c:url value='/listFruits'/>">View Fruits</a>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/updateWarehouseInventory'/>">Update Warehouse Inventory</a>
                     <a href="<c:url value='/needsApproval'/>">Approve Needs</a>
                     <a href="<c:url value='/arrangeDelivery'/>">Arrange Delivery</a>
                     <a href="<c:url value='/checkoutToShop'/>">Checkout to Shops</a>
                     <a href="<c:url value='/listDeliveries'/>">View Deliveries</a>
+                    <a href="<c:url value='/viewStaffStock'/>">Stock Overview</a>
                 </c:when>
                 <c:when test="${userInfo.role == 'Senior Management'}">
                     <a href="<c:url value='/listUsers'/>">Manage Users</a>

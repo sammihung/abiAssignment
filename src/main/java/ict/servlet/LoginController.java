@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(urlPatterns = { "/login", "/main" })
+@WebServlet(name = "LoginController", urlPatterns = {"/login", "/logout"})
 public class LoginController extends HttpServlet {
 
     private UserDB db;

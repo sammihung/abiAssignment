@@ -1,5 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ include file="menu.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="ict.bean.UserBean" %>
 
@@ -21,11 +20,15 @@
         th { background-color: #f2f2f2; cursor: pointer; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .message, .error-message { padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; }
-        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .back-link { display: block; text-align: center; margin-top: 20px; }
-        .report-filters { margin-bottom: 20px; } /* Style filters if added */
-        .dataTables_filter, .dataTables_info, .dataTables_paginate { margin-bottom: 15px; }
+        /* Updated Filter Form Styling */
+        .report-filters { margin-bottom: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; display: flex; gap: 15px; align-items: flex-end; /* Align items at bottom */ }
+        .report-filters label { margin-right: 5px; font-weight: bold;}
+        .report-filters select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 36px; /* Match button height */}
+        .report-filters button { padding: 9px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; height: 36px; }
+        .report-filters button:hover { background-color: #0056b3; }
+        .dataTables_wrapper { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -45,17 +48,28 @@
         <h1>${reportTitle}</h1>
 
         <%-- Display Messages/Errors --%>
-        <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
-        <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
-        <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
+        <c:if test="${not empty errorMessage}">
+            <div class="error-message"><c:out value="${errorMessage}" /></div>
+        </c:if>
 
-        <%-- TODO: Add filter options (e.g., dropdown to select report type: by country, by city) --%>
-        <%-- <div class="report-filters"> ... </div> --%>
+        <%-- Filter Form to select grouping --%>
+        <form action="<c:url value='/viewInventoryReport'/>" method="GET" class="report-filters">
+            <label for="groupBy">Group By:</label>
+            <select id="groupBy" name="groupBy">
+                <%-- Options for grouping, pre-select the current one --%>
+                <option value="sourceCountry" ${selectedGroupBy == 'sourceCountry' ? 'selected' : ''}>Fruit Source Country</option>
+                <option value="shop" ${selectedGroupBy == 'shop' ? 'selected' : ''}>Shop</option>
+                <option value="city" ${selectedGroupBy == 'city' ? 'selected' : ''}>City</option>
+                <option value="country" ${selectedGroupBy == 'country' ? 'selected' : ''}>Location Country</option>
+            </select>
+            <button type="submit">Generate Report</button>
+        </form>
 
         <table id="inventoryReportTable" class="display">
             <thead>
                 <tr>
-                    <th>${groupByDimension}</th> <%-- Dynamic header based on grouping --%>
+                    <%-- Table header label changes based on selected grouping --%>
+                    <th>${groupByDimension}</th>
                     <th>Fruit Name</th>
                     <th>Total Quantity</th>
                 </tr>
@@ -68,9 +82,10 @@
                         <td><c:out value="${item.totalQuantity}"/></td>
                     </tr>
                 </c:forEach>
+                <%-- Message if no data found for the selected grouping --%>
                 <c:if test="${empty inventoryReportData}">
                     <tr>
-                        <td colspan="3">No inventory data found for this report.</td>
+                        <td colspan="3">No inventory data found for this report grouping.</td>
                     </tr>
                 </c:if>
             </tbody>
@@ -83,7 +98,8 @@
         // Initialize DataTables
         $(document).ready( function () {
             $('#inventoryReportTable').DataTable({
-                 "order": [[ 0, "asc" ], [1, "asc"]] // Optional: Sort by dimension, then fruit
+                 "order": [[ 0, "asc" ], [1, "asc"]] // Default sort by dimension, then fruit
+                 // Add other DataTables options if needed (paging, searching, etc.)
             });
         });
     </script>

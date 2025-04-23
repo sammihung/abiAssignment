@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
+    <context-param>
+        <param-name>dbUrl</param-name>
+        <param-value>jdbc:mysql://localhost:3306/aib_db</param-value>
+    </context-param>
+    <context-param>
+        <param-name>dbUser</param-name>
+        <param-value>root</param-value>
+    </context-param>
+    <context-param>
+        <param-name>dbPassword</param-name>
+        <param-value/> </context-param>
+
     <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>ict.servlet.AuthFilter</filter-class> </filter>
 
-    <filter-mapping>
-        <filter-name>AuthFilter</filter-name>
-        <url-pattern>/orderFromSource</url-pattern>
-    </filter-mapping>
-
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/orderFromSource</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/borrowFruit</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/manageFruits</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateFruit</url-pattern> </filter-mapping>
@@ -32,21 +40,12 @@
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/deleteUsers</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/welcome.jsp</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listAllInventory</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewStaffStock</url-pattern> </filter-mapping>
+    <session-config>
+        <session-timeout>30</session-timeout> </session-config>
 
-
-    <servlet>
-        <servlet-name>OrderFromSourceController</servlet-name>
-        <servlet-class>ict.servlet.OrderFromSourceController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>OrderFromSourceController</servlet-name>
-        <url-pattern>/orderFromSource</url-pattern>
-    </servlet-mapping>
-
-    <context-param> <param-name>dbUrl</param-name> <param-value>jdbc:mysql://localhost:3306/aib_db</param-value> </context-param>
-    <context-param> <param-name>dbUser</param-name> <param-value>root</param-value> </context-param>
-    <context-param> <param-name>dbPassword</param-name> <param-value/> </context-param>
-
-    <welcome-file-list> <welcome-file>login.jsp</welcome-file> </welcome-file-list>
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
 
 </web-app>
