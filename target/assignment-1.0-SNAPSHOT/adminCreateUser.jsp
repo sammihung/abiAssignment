@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ include file="menu.jsp" %>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="ict.bean.UserBean" %>
 <%@ page import="ict.servlet.AuthFilter" %> <%-- Import AuthFilter for role constants --%>
@@ -30,7 +30,7 @@
 <body>
     <%-- Optional: Include header/menu --%>
 
-
+    <%@ include file="menu.jsp" %>
     <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");

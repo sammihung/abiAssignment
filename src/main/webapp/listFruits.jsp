@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- JSTL Core library --%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> <%-- JSTL Functions (Optional, for string manipulation if needed) --%>
-<%@ include file="menu.jsp" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +36,7 @@
     </style>
 </head>
 <body>
-
+    <jsp:include page="menu.jsp" />
 <div class="container">
     <h2>Fruit List</h2>
 

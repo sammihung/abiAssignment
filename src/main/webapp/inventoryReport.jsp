@@ -33,7 +33,7 @@
 </head>
 <body>
     <%-- Optional: Include header/menu --%>
-    <%-- <jsp:include page="menu.jsp" /> --%>
+    <jsp:include page="menu.jsp" />
 
     <%-- Basic login & role check --%>
     <%

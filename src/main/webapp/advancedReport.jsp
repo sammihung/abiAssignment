@@ -1,5 +1,4 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ include file="menu.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ page import="ict.bean.UserBean" %>
@@ -35,7 +34,7 @@
 </head>
 <body>
     <%-- Optional: Include header/menu --%>
-    <%-- <jsp:include page="menu.jsp" /> --%>
+    <%@ include file="menu.jsp" %>
 
     <%-- Basic login & role check --%>
     <%

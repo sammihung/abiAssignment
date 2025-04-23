@@ -1,6 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%-- Include menu if needed --%>
-<%-- <%@ include file="menu.jsp" %> --%>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="ict.bean.UserBean" %> <%-- Import UserBean --%>
@@ -10,11 +9,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+    
+   
     <title>${listTitle}</title> <%-- Use the title set by the servlet --%>
     <%-- Link to DataTables CSS --%>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
-        body { font-family: sans-serif; padding: 20px; }
+        body { font-family: sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; }
         #userTable th, #userTable td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         #userTable th { background-color: #f2f2f2; }
@@ -36,9 +37,7 @@
     </style>
 </head>
 <body>
-
-    <%-- Include menu.jsp at the top --%>
-    <%@ include file="menu.jsp" %>
+    <jsp:include page="menu.jsp" />
 
     <h1>${listTitle}</h1> <%-- Display the title set by the servlet --%>
 
