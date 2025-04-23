@@ -7,12 +7,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level; // Import logging classes
+import java.util.logging.Logger; // Import logging classes
 
 import ict.bean.WarehouseBean;
 
 public class WarehouseDB {
 
+    private static final Logger LOGGER = Logger.getLogger(WarehouseDB.class.getName()); // Logger instance
     String dburl, username, password;
+
+    // Constructor and Getters/Setters remain the same...
+    public WarehouseDB(String dburl, String dbUser, String dbPassword) {
+        this.dburl = dburl;
+        this.username = dbUser;
+        this.password = dbPassword;
+    }
 
     public String getUrl() {
         return dburl;
@@ -38,41 +49,29 @@ public class WarehouseDB {
         this.password = password;
     }
 
-    public WarehouseDB(String dburl, String dbUser, String dbPassword) {
-        this.dburl = dburl;
-        this.username = dbUser;
-        this.password = dbPassword;
-    }
-
     public Connection getConnection() throws SQLException, IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            // Log and rethrow as SQLException for consistent error handling
+            LOGGER.log(Level.SEVERE, "MySQL JDBC Driver not found", e);
+            throw new SQLException("MySQL JDBC Driver not found", e);
         }
         return DriverManager.getConnection(dburl, username, password);
     }
 
-    public ArrayList<WarehouseBean> getBakeryShop() throws SQLException, IOException {
-        String sql = "SELECT shop_id, shop_name, city, country FROM shops";
-        ArrayList<WarehouseBean> warehouses = new ArrayList<>();
-        try (Connection c = getConnection();
-                PreparedStatement ps = c.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                WarehouseBean warehouse = new WarehouseBean(
-                        rs.getString("warehouse_id"),
-                        rs.getString("warehouse_name"),
-                        rs.getString("city"),
-                        rs.getString("country"),
-                        rs.getString("is_source"));
-                warehouses.add(warehouse);
+    // --- Helper for closing resources ---
+    private void closeQuietly(AutoCloseable resource) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to close resource: " + resource.getClass().getSimpleName(), e);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return warehouses;
-    } // Add this method inside your existing WarehouseDB class
+    }
+
+    // --- REMOVED INCORRECT getBakeryShop() method ---
 
     /**
      * Retrieves a single warehouse by its ID.
@@ -82,65 +81,33 @@ public class WarehouseDB {
      */
     public WarehouseBean getWarehouseById(int warehouseId) {
         WarehouseBean warehouse = null;
+        // Corrected SQL table name and columns
         String sql = "SELECT warehouse_id, warehouse_name, city, country, is_source FROM warehouses WHERE warehouse_id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
-            conn = getConnection(); // Use the existing getConnection method
+            conn = getConnection();
             ps = conn.prepareStatement(sql);
             ps.setInt(1, warehouseId);
             rs = ps.executeQuery();
 
             if (rs.next()) {
-                warehouse = new WarehouseBean();
-                // Make sure column names match your 'warehouses' table schema
-                warehouse.setWarehouse_id(rs.getString("warehouse_id")); // Assuming WarehouseBean uses String ID
-                warehouse.setWarehouse_name(rs.getString("warehouse_name"));
-                warehouse.setCity(rs.getString("city"));
-                warehouse.setCountry(rs.getString("country"));
-                // Handle boolean/tinyint for is_source - adapt based on WarehouseBean's field
-                // type
-                // If WarehouseBean uses String:
-                warehouse.setIs_source(rs.getBoolean("is_source") ? "1" : "0");
-                // If WarehouseBean uses boolean:
-                // warehouse.setIs_source(rs.getBoolean("is_source"));
-
-                // System.out.println("Warehouse found: ID=" + warehouseId); // Optional logging
+                warehouse = mapRowToWarehouseBean(rs); // Use helper method
+                LOGGER.log(Level.INFO, "Warehouse found: ID={0}", warehouseId);
             } else {
-                // System.out.println("Warehouse not found: ID=" + warehouseId); // Optional
-                // logging
+                LOGGER.log(Level.WARNING, "Warehouse not found: ID={0}", warehouseId);
             }
         } catch (SQLException | IOException e) {
-            // Consider adding logging here using a Logger if you have one setup
-            System.err.println("Error fetching warehouse with ID: " + warehouseId);
-            e.printStackTrace(); // Print stack trace for debugging
+            LOGGER.log(Level.SEVERE, "Error fetching warehouse with ID: " + warehouseId, e);
         } finally {
-            // Close resources using your preferred method (e.g., individual try-catch or a
-            // helper)
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException e) {
-                /* ignore */ }
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-            } catch (SQLException e) {
-                /* ignore */ }
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                /* ignore */ }
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
         }
         return warehouse;
     }
-    // Add this method inside your existing WarehouseDB class
 
     /**
      * Finds a non-source ('central') warehouse ID in a specific country.
@@ -151,7 +118,7 @@ public class WarehouseDB {
      */
     public int findCentralWarehouseInCountry(String country) {
         int warehouseId = -1;
-        // Find a warehouse in the country where is_source is false or null
+        // Corrected SQL table name
         String sql = "SELECT warehouse_id FROM warehouses WHERE country = ? AND (is_source = 0 OR is_source IS NULL) LIMIT 1";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -162,36 +129,70 @@ public class WarehouseDB {
             ps = conn.prepareStatement(sql);
             ps.setString(1, country);
             rs = ps.executeQuery();
-
             if (rs.next()) {
                 warehouseId = rs.getInt("warehouse_id");
-                // System.out.println("Found central warehouse ID " + warehouseId + " in country
-                // " + country); // Optional logging
-            } else {
-                // System.out.println("No central warehouse found in country " + country); //
-                // Optional logging
             }
         } catch (SQLException | IOException e) {
-            System.err.println("Error finding central warehouse in country: " + country);
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error finding central warehouse in country: " + country, e);
         } finally {
-            try {
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                /* ignore */ }
-            try {
-                if (ps != null)
-                    ps.close();
-            } catch (SQLException e) {
-                /* ignore */ }
-            try {
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException e) {
-                /* ignore */ }
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
         }
         return warehouseId;
     }
 
-}
+    /**
+     * CORRECTED: Retrieves all warehouses from the database.
+     *
+     * @return A List of WarehouseBean objects.
+     */
+    public List<WarehouseBean> getAllWarehouses() {
+        List<WarehouseBean> warehouses = new ArrayList<>();
+        // Corrected table name and SELECT columns explicitly
+        String query = "SELECT warehouse_id, warehouse_name, city, country, is_source FROM warehouses ORDER BY country, city, warehouse_name";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            stmt = conn.prepareStatement(query);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                WarehouseBean warehouse = mapRowToWarehouseBean(rs); // Use helper method
+                warehouses.add(warehouse);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} warehouses.", warehouses.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all warehouses", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(stmt);
+            closeQuietly(conn);
+        }
+        return warehouses;
+    }
+
+    /**
+     * Helper method to map a ResultSet row to a WarehouseBean object.
+     * 
+     * @param rs The ResultSet, positioned at the current row.
+     * @return A populated WarehouseBean.
+     * @throws SQLException if a column access error occurs.
+     */
+    private WarehouseBean mapRowToWarehouseBean(ResultSet rs) throws SQLException {
+        WarehouseBean warehouse = new WarehouseBean();
+        // Use correct column names and populate all relevant fields
+        warehouse.setWarehouse_id(rs.getString("warehouse_id"));
+        warehouse.setWarehouse_name(rs.getString("warehouse_name"));
+        warehouse.setCity(rs.getString("city"));
+        warehouse.setCountry(rs.getString("country"));
+        // Handle boolean/tinyint for is_source
+        // Assuming WarehouseBean's setIs_source expects a String ("1" or "0")
+        warehouse.setIs_source(rs.getBoolean("is_source") ? "1" : "0");
+        // If it expects boolean: warehouse.setIs_source(rs.getBoolean("is_source"));
+        return warehouse;
+    }
+
+} // End of WarehouseDB class

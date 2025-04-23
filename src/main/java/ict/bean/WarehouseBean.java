@@ -54,4 +54,15 @@ public class WarehouseBean {
         this.is_source = is_source;
     }
 
+    public void setId(String int1) {
+        this.warehouse_id = int1;
+    }
+
+    public String getName() {
+        return warehouse_name;
+    }
+
+    public void setName(String name) {
+        this.warehouse_name = name;
+    }
 }

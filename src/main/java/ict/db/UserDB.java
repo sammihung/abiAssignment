@@ -520,5 +520,122 @@ public class UserDB {
             }
         }
         return users;
+    } // Add this method inside your existing UserDB class
+
+    /**
+     * Retrieves all users from the database, regardless of role.
+     * Intended for administrative purposes (e.g., Senior Management).
+     * Returns data structured similarly to getUsersByRoleAsMap for consistency.
+     *
+     * @return A Map where the key is the role name (String) and the value is a List
+     *         of UserBean objects for that role.
+     *         Returns an empty map if no users are found or an error occurs.
+     */
+    public Map<String, List<UserBean>> getAllUsersAsMap() {
+        Map<String, List<UserBean>> usersByRole = new HashMap<>();
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        // SQL to get all users, ordered by role then username
+        String sql = "SELECT * FROM users ORDER BY role, username";
+
+        try {
+            c = getConnection(); // Use your existing getConnection method
+            ps = c.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                UserBean user = new UserBean();
+                user.setUserId(rs.getString("user_id")); // Assuming UserBean uses String ID
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password")); // Be cautious about loading passwords
+                user.setRole(rs.getString("role"));
+                user.setShopId(rs.getString("shop_id"));
+                user.setWarehouseId(rs.getString("warehouse_id"));
+                user.setUserEmail(rs.getString("userEmail"));
+                // Consider omitting password or handling it securely if needed elsewhere
+
+                String role = user.getRole();
+                // Add user to the list for their role, creating the list if it doesn't exist
+                usersByRole.computeIfAbsent(role, k -> new ArrayList<>()).add(user);
+            }
+            LOGGER.log(Level.INFO, "Fetched all users, grouped into {0} roles.", usersByRole.size());
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all users", e);
+            // Consider clearing the map on error to avoid returning partial data
+            usersByRole.clear();
+        } finally {
+            // Close resources using your existing helper method (e.g., closeQuietly)
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(c);
+        }
+        return usersByRole;
     }
+
+    // Ensure you have the closeQuietly helper method or adapt the finally block
+    // private void closeQuietly(AutoCloseable resource) { ... }
+    private void closeQuietly(AutoCloseable resource) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to close resource", e);
+            }
+        }
+    } // Add this method inside your existing UserDB class
+
+    /**
+     * Retrieves users for a specific role and returns them grouped in a Map.
+     * The map will contain only one key (the specified role).
+     *
+     * @param role The role to filter by.
+     * @return A Map where the key is the role name and the value is a List of
+     *         UserBean objects for that role.
+     *         Returns an empty map if no users are found or an error occurs.
+     */
+    public Map<String, List<UserBean>> getUsersGroupedByRole(String role) {
+        Map<String, List<UserBean>> usersByRole = new HashMap<>();
+        List<UserBean> userList = new ArrayList<>(); // List to hold users of this role
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "SELECT * FROM users WHERE role = ? ORDER BY username"; // Get users for the specific role
+
+        try {
+            c = getConnection();
+            ps = c.prepareStatement(sql);
+            ps.setString(1, role);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                UserBean user = new UserBean();
+                user.setUserId(rs.getString("user_id"));
+                user.setUsername(rs.getString("username"));
+                // user.setPassword(rs.getString("password")); // Avoid loading password
+                user.setRole(rs.getString("role"));
+                user.setShopId(rs.getString("shop_id"));
+                user.setWarehouseId(rs.getString("warehouse_id"));
+                user.setUserEmail(rs.getString("userEmail"));
+                userList.add(user); // Add user to the list
+            }
+
+            // If users were found for this role, add the list to the map
+            if (!userList.isEmpty()) {
+                usersByRole.put(role, userList);
+            }
+            LOGGER.log(Level.INFO, "Fetched {0} users for role: {1}", new Object[] { userList.size(), role });
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching users grouped by role: " + role, e);
+            usersByRole.clear(); // Return empty map on error
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(c);
+        }
+        return usersByRole;
+    }
+
 }

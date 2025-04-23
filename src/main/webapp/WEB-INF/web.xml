@@ -43,7 +43,19 @@
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewStaffStock</url-pattern> </filter-mapping>
     <session-config>
         <session-timeout>30</session-timeout> </session-config>
+<servlet>
+    <servlet-name>AdminCreateUserController</servlet-name>
+    <servlet-class>ict.servlet.AdminCreateUserController</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>AdminCreateUserController</servlet-name>
+    <url-pattern>/adminCreateUser</url-pattern>
+</servlet-mapping>
 
+<filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/adminCreateUser</url-pattern>
+</filter-mapping>
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>

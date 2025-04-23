@@ -37,6 +37,7 @@ ict\servlet\DeleteFruitController.class
 ict\db\BakeryShopDB.class
 ict\servlet\ListReservationsController.class
 ict\servlet\NeedsApprovalController.class
+ict\servlet\AdminCreateUserController.class
 ict\db\FruitDB.class
 ict\db\ReservationDB.class
 ict\bean\BakeryShopBean.class

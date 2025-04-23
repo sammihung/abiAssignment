@@ -72,6 +72,16 @@ public class UserBean implements Serializable {
         this.password = password;
     }
 
+    private String userEmail;
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
     public String toString() {
         return "UserBean{" +
                 "email='" + email + '\'' +
