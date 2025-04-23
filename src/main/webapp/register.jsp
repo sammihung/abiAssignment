@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <title>Register</title>
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;

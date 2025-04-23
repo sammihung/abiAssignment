@@ -13,7 +13,19 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
+        /* Reset default margins and paddings */
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Ensure the menu bar has no unintended spacing */
+        .menu-bar {
+            margin: 0;
+            padding: 0;
+        }
+
+        body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
         h1, h2 { color: #333; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px; }
@@ -34,8 +46,6 @@
     </style>
 </head>
 <body>
-    <%-- Optional: Include header --%>
-    <%-- <jsp:include page="header.jsp" /> --%>
 
     <%-- Basic login & role check --%>
     <%

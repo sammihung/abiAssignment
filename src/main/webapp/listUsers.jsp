@@ -15,6 +15,10 @@
     <%-- Link to DataTables CSS --%>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
         body { font-family: sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; }
         #userTable th, #userTable td { border: 1px solid #ddd; padding: 8px; text-align: left; }

@@ -9,7 +9,7 @@
     <title>Create Fruit</title> <%-- Updated Title --%>
     <%-- Basic Styling (Consider using a shared CSS file) --%>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
+        body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
         h1 { color: #333; text-align: center; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }

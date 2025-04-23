@@ -14,7 +14,7 @@
         <style>
             body {
                 font-family: sans-serif;
-                margin: 20px;
+                margin: 0px;
                 background-color: #f4f4f4;
             }
             .container {
