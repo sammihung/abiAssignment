@@ -31,6 +31,7 @@ ict\db\WarehouseDB.class
 ict\bean\InventorySummaryBean.class
 ict\bean\OrderableFruitBean.class
 ict\bean\ReservationBean.class
+ict\servlet\ForecastReportController.class
 ict\servlet\assignment\JakartaRestConfiguration.class
 ict\servlet\StaffStockViewController.class
 ict\servlet\UpdateFruitController.class
@@ -43,6 +44,7 @@ ict\db\FruitDB.class
 ict\db\ReservationDB.class
 ict\bean\BakeryShopBean.class
 ict\db\DeliveryDB.class
+ict\bean\ForecastBean.class
 ict\servlet\AuthFilter.class
 ict\servlet\ApproveBorrowController.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class

@@ -2,11 +2,13 @@ package ict.db;
 
 import ict.bean.AggregatedNeedBean;
 import ict.bean.ConsumptionDataBean;
+import ict.bean.ForecastBean;
 import ict.bean.FruitBean; // Assuming FruitDB is available
 import ict.bean.ReservationBean;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -1176,6 +1178,90 @@ public class ReservationDB {
             closeQuietly(conn);
         }
         return consumption;
+    }
+    // Add this method inside your DB class (e.g., ReservationDB or BorrowingDB)
+    // Ensure imports for java.sql.Date and java.math.BigDecimal exist
+
+    /**
+     * Calculates the average daily consumption ('Fulfilled' reservations) for
+     * each fruit, grouped by the destination shop's country, within a date
+     * range.
+     *
+     * @param startDate The start date of the period (inclusive).
+     * @param endDate The end date of the period (inclusive).
+     * @return A list of ForecastBean objects. Returns empty list on error or if
+     * dates are invalid.
+     */
+    public List<ForecastBean> getAverageDailyConsumptionByFruitAndCountry(Date startDate, Date endDate) {
+        List<ForecastBean> forecastData = new ArrayList<>();
+
+        // Validate dates: end date must be on or after start date
+        if (startDate == null || endDate == null || startDate.after(endDate)) {
+            LOGGER.log(Level.WARNING, "Invalid date range provided for forecast report: Start={0}, End={1}", new Object[]{startDate, endDate});
+            return forecastData; // Return empty list for invalid range
+        }
+
+        // Calculate number of days in the period (inclusive)
+        // Adding 1 because DATEDIFF calculates the difference; we need the count of days.
+        // Using Java time for robust calculation
+        long periodDays = java.time.temporal.ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
+        if (periodDays <= 0) {
+            LOGGER.log(Level.WARNING, "Date range results in zero or negative days for forecast report.");
+            return forecastData; // Avoid division by zero
+        }
+
+        // SQL to sum fulfilled quantity and group by target country and fruit
+        String sql = "SELECT "
+                + "  s.country AS target_country, "
+                + "  r.fruit_id, "
+                + "  f.fruit_name, "
+                + "  SUM(r.quantity) AS total_consumed "
+                + "FROM reservations r "
+                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
+                + "JOIN shops s ON r.shop_id = s.shop_id "
+                + "WHERE r.status = 'Fulfilled' "
+                + "  AND r.reservation_date BETWEEN ? AND ? "
+                + // Use reservation_date or a completion_date if available
+                "GROUP BY s.country, r.fruit_id, f.fruit_name "
+                + "ORDER BY s.country, f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                ForecastBean bean = new ForecastBean();
+                bean.setTargetCountry(rs.getString("target_country"));
+                bean.setFruitId(rs.getInt("fruit_id"));
+                bean.setFruitName(rs.getString("fruit_name"));
+
+                long totalConsumed = rs.getLong("total_consumed");
+
+                // Calculate average using BigDecimal for precision
+                BigDecimal avgDaily = new BigDecimal(totalConsumed)
+                        .divide(new BigDecimal(periodDays), 2, java.math.RoundingMode.HALF_UP); // 2 decimal places
+
+                bean.setAverageDailyConsumption(avgDaily);
+                forecastData.add(bean);
+            }
+            LOGGER.log(Level.INFO, "Calculated average daily consumption for {0} fruit/country combinations between {1} and {2}",
+                    new Object[]{forecastData.size(), startDate, endDate});
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error calculating average daily consumption", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return forecastData;
     }
 
 }

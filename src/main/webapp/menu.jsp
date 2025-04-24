@@ -59,9 +59,6 @@
         </style>
     </head>
     <body>
-        <%-- Use jsp:useBean only if checkLogin.jsp doesn't already guarantee its presence --%>
-        <%-- <jsp:useBean id="userInfo" class="ict.bean.UserBean" scope="session" /> --%>
-
         <div class="menu-bar">
             <a href="<c:url value='/welcome.jsp'/>">Home</a>
 
@@ -96,6 +93,8 @@
                     <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
                     <a href="<c:url value='/listDeliveries'/>">View Deliveries</a>
                     <a href="<c:url value='/listAllInventory'/>">View All Inventory</a>
+                    <%-- ADDED: Forecast Report Link --%>
+                    <a href="<c:url value='/viewForecastReport'/>">Forecast Report</a>
                 </c:when>
             </c:choose>
 

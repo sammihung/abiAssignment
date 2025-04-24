@@ -9,7 +9,7 @@
     <title>Update Fruit</title>
     <%-- Basic Styling (Optional - Consider using a shared CSS file) --%>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
+        body { font-family: sans-serif; margin: 0px; }
         .container { max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; }
