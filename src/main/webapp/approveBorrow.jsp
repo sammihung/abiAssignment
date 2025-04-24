@@ -27,15 +27,13 @@
         .back-link { display: block; text-align: center; margin-top: 20px; }
         .dataTables_wrapper { margin-top: 20px; }
         .action-button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; }
-        .approve-btn { background-color: #28a745; } /* Green */
-        .reject-btn { background-color: #dc3545; } /* Red */
+        .approve-btn { background-color: #28a745; } 
+        .reject-btn { background-color: #dc3545; }
         .action-button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getShopId() == null) {
@@ -73,7 +71,6 @@
                         <td><c:out value="${req.quantity}"/></td>
                         <td><fmt:formatDate value="${req.borrowingDate}" pattern="yyyy-MM-dd" /></td>
                         <td>
-                            <%-- Approve Form --%>
                             <form action="<c:url value='/approveBorrow'/>" method="POST" style="display:inline;">
                                 <input type="hidden" name="borrowingId" value="${req.borrowingId}">
                                 <input type="hidden" name="action" value="approve">
@@ -82,7 +79,6 @@
                                     Approve
                                 </button>
                             </form>
-                            <%-- Reject Form --%>
                             <form action="<c:url value='/approveBorrow'/>" method="POST" style="display:inline;">
                                 <input type="hidden" name="borrowingId" value="${req.borrowingId}">
                                 <input type="hidden" name="action" value="reject">
@@ -101,14 +97,12 @@
                 </c:if>
             </tbody>
         </table>
-
-        <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>
         $(document).ready( function () {
             $('#approveBorrowTable').DataTable({
-                 "order": [[ 4, "asc" ]] // Sort by Date ascending
+                 "order": [[ 4, "asc" ]] 
             });
         });
     </script>

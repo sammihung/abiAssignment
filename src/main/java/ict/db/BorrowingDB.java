@@ -1,5 +1,6 @@
 package ict.db;
 
+import ict.bean.AggregatedNeedBean;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -26,6 +27,7 @@ import ict.bean.InventorySummaryBean;
 import ict.bean.OrderableFruitBean;
 import ict.bean.ReservationBean;
 import ict.bean.WarehouseBean;
+import ict.db.ReservationDB.SeasonalConsumptionBean;
 
 /**
  * Handles database operations related to borrowing fruits between shops,
@@ -2010,10 +2012,105 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         }
         return resultList;
     }
+    // Add this method inside your existing BorrowingDB class
 
-    // --- Ensure this helper method exists (takes status as parameter) ---
-    // private boolean addBorrowingRecord(int fruitId, int lendingShopId, int
-    // borrowingShopId, int quantity, String status, Connection conn) throws
+    /**
+     * Gets aggregated pending/approved needs for ALL fruits across ALL locations.
+     * Does not filter by shop, city, country, or date.
+     *
+     * @return List of AggregatedNeedBean.
+     */
+    public List<AggregatedNeedBean> getAllAggregatedNeeds() {
+        List<AggregatedNeedBean> needs = new ArrayList<>();
+        // Simpler SQL: Group only by fruit, sum pending/approved reservations
+        String sql = "SELECT f.fruit_name, f.fruit_id, SUM(r.quantity) AS total_needed_quantity " +
+                     "FROM reservations r " +
+                     "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                     "WHERE r.status IN ('Pending', 'Approved') " + // Needs are pending or approved
+                     "GROUP BY f.fruit_name, f.fruit_id " +
+                     "HAVING SUM(r.quantity) > 0 " + // Only show fruits with needs
+                     "ORDER BY f.fruit_name";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                // Using AggregatedNeedBean, ensure it's defined/imported
+                AggregatedNeedBean need = new AggregatedNeedBean();
+                need.setFruitId(rs.getInt("fruit_id"));
+                need.setFruitName(rs.getString("fruit_name"));
+                need.setTotalNeededQuantity(rs.getInt("total_needed_quantity"));
+                // No specific dimension to set here as it's an overall total per fruit
+                needs.add(need);
+            }
+             LOGGER.log(Level.INFO, "Fetched {0} total aggregated needs rows.", needs.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all aggregated needs", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return needs;
+    }
+    // Add this method inside your existing BorrowingDB class
+    // Ensure SeasonalConsumptionBean is defined/imported
+
+    /**
+     * Gets seasonal consumption ('Fulfilled' reservations) for ALL fruits across ALL locations.
+     * Does not filter by shop, city, country, or specific date range (implicitly uses all time).
+     *
+     * @return List of SeasonalConsumptionBean.
+     */
+    public List<SeasonalConsumptionBean> getAllSeasonalConsumption() {
+        List<SeasonalConsumptionBean> consumption = new ArrayList<>();
+        // Simpler SQL: Group only by season and fruit name, sum fulfilled reservations
+        String sql = "SELECT " +
+                     "  CASE " +
+                     "    WHEN MONTH(r.reservation_date) IN (3, 4, 5) THEN 'Spring' " +
+                     "    WHEN MONTH(r.reservation_date) IN (6, 7, 8) THEN 'Summer' " +
+                     "    WHEN MONTH(r.reservation_date) IN (9, 10, 11) THEN 'Autumn' " +
+                     "    ELSE 'Winter' " +
+                     "  END AS season, " +
+                     "  f.fruit_name, " +
+                     "  SUM(r.quantity) as total_consumed " +
+                     "FROM reservations r " +
+                     "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                     "WHERE r.status = 'Fulfilled' " + // Consumption = Fulfilled
+                     "GROUP BY season, f.fruit_name " +
+                     "ORDER BY FIELD(season, 'Spring', 'Summer', 'Autumn', 'Winter'), f.fruit_name"; // Order seasons correctly
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                SeasonalConsumptionBean item = new SeasonalConsumptionBean();
+                item.setSeason(rs.getString("season"));
+                item.setFruitName(rs.getString("fruit_name"));
+                item.setTotalConsumedQuantity(rs.getLong("total_consumed"));
+                consumption.add(item);
+            }
+             LOGGER.log(Level.INFO, "Fetched {0} total seasonal consumption rows.", consumption.size());
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching all seasonal consumption", e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return consumption;
+    }
+
     // SQLException { ... }
 
 } // End of BorrowingDB class

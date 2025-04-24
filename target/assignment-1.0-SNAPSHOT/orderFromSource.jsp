@@ -101,7 +101,7 @@
             <button type="submit" class="submit-button">Submit Order</button>
         </form>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
+
     </div>
 
     <script>

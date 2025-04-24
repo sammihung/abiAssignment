@@ -101,7 +101,6 @@
             </form>
         </div>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
 
     </div>
 

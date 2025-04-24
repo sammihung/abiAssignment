@@ -36,10 +36,7 @@
     </style>
 </head>
 <body>
-    <%-- Optional: Include header --%>
-    <%-- <jsp:include page="header.jsp" /> --%>
 
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
@@ -52,7 +49,6 @@
         <h1>Checkout Delivery to Shops</h1>
         <p>Dispatch items from your warehouse (ID: <c:out value="${userInfo.warehouseId}"/>) to fulfill approved/shipped reservations.</p>
 
-        <%-- Display Messages/Errors --%>
         <c:if test="${not empty param.message}">
             <div class="message"><c:out value="${param.message}" /></div>
         </c:if>
@@ -106,7 +102,6 @@
             </tbody>
         </table>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>
@@ -118,7 +113,5 @@
         });
     </script>
 
-    <%-- Optional: Include footer --%>
-    <%-- <jsp:include page="footer.jsp" /> --%>
 </body>
 </html>

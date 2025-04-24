@@ -48,10 +48,7 @@
     </style>
 </head>
 <body>
-    <%-- Optional: Include header/menu --%>
 
-
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Senior Management".equalsIgnoreCase(currentUser.getRole())) {
@@ -106,16 +103,15 @@
             </tbody>
         </table>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
 
     </div>
 
-    <%-- Include DataTables JavaScript --%>
+
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    <%-- ADDED: JavaScript for Chart Initialization --%>
+ 
     <script>
-        // Prepare data for Chart.js
+   
         const reportData = [];
         <c:forEach var="item" items="${consumptionReportData}">
             // Escape potentially problematic characters in names for JavaScript string literals

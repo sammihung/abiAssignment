@@ -91,7 +91,6 @@
             </tbody>
         </table>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>

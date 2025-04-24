@@ -76,7 +76,7 @@
             </tbody>
         </table>
 
-        <a href="javascript:history.back()" class="back-link">Back</a> <%-- Or link to welcome page --%>
+     
     </div>
 
     <script>

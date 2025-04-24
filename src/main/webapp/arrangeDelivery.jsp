@@ -38,10 +38,6 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 </head>
 <body>
-    <%-- Optional: Include header --%>
-    <%-- <jsp:include page="header.jsp" /> --%>
-
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
@@ -54,7 +50,6 @@
         <h1>Arrange Delivery (Checkout)</h1>
         <p>This page shows approved reservation quantities grouped by fruit and target country, ready for delivery from your warehouse (ID: <c:out value="${userInfo.warehouseId}"/>).</p>
 
-        <%-- Display Messages/Errors --%>
         <c:if test="${not empty param.message}">
             <div class="message"><c:out value="${param.message}" /></div>
         </c:if>
@@ -100,20 +95,15 @@
                 </c:if>
             </tbody>
         </table>
-
-        <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>
-        // Initialize DataTables
         $(document).ready( function () {
             $('#deliveryNeedsTable').DataTable({
-                 "order": [[ 1, "asc" ], [0, "asc"]] // Optional: Sort by country, then fruit name
+                 "order": [[ 1, "asc" ], [0, "asc"]] 
             });
         });
     </script>
 
-    <%-- Optional: Include footer --%>
-    <%-- <jsp:include page="footer.jsp" /> --%>
 </body>
 </html>

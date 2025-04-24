@@ -3,6 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> <%-- For functions like length --%>
 <%@ page import="ict.bean.UserBean" %>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +14,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <style>
-        body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
         h1 { color: #333; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -36,7 +37,7 @@
         .lender-list li { margin-bottom: 3px; }
         .lender-list .shop-name { font-weight: bold; }
         .lender-list .qty { color: green; }
-        .no-lenders { color: #888; font-style: italic; }
+        /* No need for .no-lenders style anymore as the row won't be shown */
     </style>
 </head>
 <body>
@@ -53,7 +54,7 @@
 
     <div class="container">
         <h1>Borrow Fruits from Shops in <c:out value="${currentCity}"/></h1>
-        <p>Enter quantities for the fruits you wish to borrow. The table shows which shops in your city have stock. Select ONE shop below to send the entire request to.</p>
+        <p>Enter quantities for the fruits you wish to borrow. Only fruits available from at least one other shop in your city are shown. Select ONE shop below to send the entire request to.</p>
 
         <%-- Display Messages/Errors --%>
         <c:if test="${not empty param.message}"> <div class="message success"><c:out value="${param.message}" /></div> </c:if>
@@ -67,49 +68,46 @@
                     <tr>
                         <th>Fruit Name</th>
                         <th>Source Country</th>
-                        <th>Available From (Shop & Qty)</th> <%-- New Column --%>
+                        <th>Available From (Shop & Qty)</th>
                         <th>Borrow Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
                     <%-- Iterate through the enhanced fruit list --%>
                     <c:forEach var="fruitInfo" items="${borrowableFruits}">
-                        <tr>
-                            <td><c:out value="${fruitInfo.fruitName}"/> (ID: <c:out value="${fruitInfo.fruitId}"/>)</td>
-                            <td><c:out value="${fruitInfo.sourceCountry}"/></td>
-                            <td>
-                                <%-- Display list of shops that have this fruit --%>
-                                <c:choose>
-                                    <c:when test="${not empty fruitInfo.lenderInfo}">
-                                        <ul class="lender-list">
-                                            <c:forEach var="lender" items="${fruitInfo.lenderInfo}">
-                                                <li>
-                                                    <span class="shop-name"><c:out value="${lender.shopName}"/>:</span>
-                                                    <span class="qty"><c:out value="${lender.quantity}"/></span>
-                                                </li>
-                                            </c:forEach>
-                                        </ul>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="no-lenders">None in city</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td>
-                                <%-- Input name includes fruitId --%>
-                                <input type="number" name="quantity_${fruitInfo.fruitId}" min="0" value="0">
-                            </td>
-                        </tr>
+                        <%-- ***** ADDED IF CONDITION ***** --%>
+                        <%-- Only display the row if there is at least one lender for this fruit --%>
+                        <c:if test="${not empty fruitInfo.lenderInfo}">
+                            <tr>
+                                <td><c:out value="${fruitInfo.fruitName}"/> (ID: <c:out value="${fruitInfo.fruitId}"/>)</td>
+                                <td><c:out value="${fruitInfo.sourceCountry}"/></td>
+                                <td>
+                                    <%-- Display list of shops that have this fruit --%>
+                                    <ul class="lender-list">
+                                        <c:forEach var="lender" items="${fruitInfo.lenderInfo}">
+                                            <li>
+                                                <span class="shop-name"><c:out value="${lender.shopName}"/>:</span>
+                                                <span class="qty"><c:out value="${lender.quantity}"/></span>
+                                            </li>
+                                        </c:forEach>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <%-- Input name includes fruitId --%>
+                                    <input type="number" name="quantity_${fruitInfo.fruitId}" min="0" value="0">
+                                </td>
+                            </tr>
+                        </c:if>
+                        <%-- ***** END OF ADDED IF CONDITION ***** --%>
                     </c:forEach>
-                    <c:if test="${empty borrowableFruits}">
-                        <tr><td colspan="4">No fruits found in the system.</td></tr>
-                    </c:if>
+                    <%-- Note: A message for "No borrowable fruits found" might be needed if the entire list is empty after filtering --%>
+                    <%-- You could add a check outside the loop or use JavaScript after DataTables initialization --%>
                 </tbody>
             </table>
 
-             <%-- Lender Selection Dropdown remains the same --%>
+             <%-- Lender Selection Dropdown - Still needed to choose ONE shop for the whole request --%>
              <div class="lender-selection">
-                <label for="lendingShopId">Borrow All Items From:</label>
+                <label for="lendingShopId">Borrow All Requested Items From:</label>
                 <select id="lendingShopId" name="lendingShopId" required>
                     <option value="">-- Select a Shop in <c:out value="${currentCity}"/> --</option>
                     <c:forEach var="lender" items="${potentialLenders}">
@@ -126,7 +124,6 @@
             <button type="submit" class="submit-button" ${empty potentialLenders ? 'disabled' : ''}>Submit Borrow Request</button>
         </form>
 
-        <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>
@@ -137,6 +134,15 @@
                 "columnDefs": [ // Optional: Disable sorting on availability column
                    { "orderable": false, "targets": 2 }
                  ]
+                 // Optional: Check if table body is empty after initialization and show a message
+                 // "drawCallback": function ( settings ) {
+                 //     var api = this.api();
+                 //     if (api.rows( {page:'current'} ).data().length === 0 ) {
+                 //         // Handle empty table case, e.g., display a message
+                 //         // console.log('Table is empty after filtering/initialization');
+                 //         // You might need to add a placeholder row or message div
+                 //     }
+                 // }
             });
         });
     </script>

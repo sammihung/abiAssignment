@@ -1,3 +1,4 @@
+<%@ taglib prefix="my" uri="/WEB-INF/tlds/mytags" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ include file="menu.jsp" %>
 <!DOCTYPE html>
@@ -8,7 +9,7 @@
     </head>
     <body>
         <h1>Welcome to the System</h1>
-        <!-- Display success message if available -->
+        <p>Copyright &copy; <my:currentYear /> Acer International Bakery. All rights reserved.</p>
         <c:if test="${not empty param.message}">
             <p style="color: green;">${param.message}</p>
         </c:if>
