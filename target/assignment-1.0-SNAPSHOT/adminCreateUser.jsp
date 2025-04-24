@@ -2,7 +2,7 @@
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="ict.bean.UserBean" %>
-<%@ page import="ict.servlet.AuthFilter" %> <%-- Import AuthFilter for role constants --%>
+<%@ page import="ict.servlet.AuthFilter" %> 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +69,7 @@
                 text-align: center;
                 margin-top: 20px;
             }
-            /* Initially hide shop/warehouse selects */
+            
             #shopGroup, #warehouseGroup {
                 display: none;
             }
@@ -102,7 +102,7 @@
                 <div class="form-group">
                     <label for="password">Password:</label>
                     <input type="password" id="password" name="password" required>
-                    <%-- Add confirm password field for better UX --%>
+                    
                 </div>
                 <div class="form-group">
                     <label for="email">Email:</label>
@@ -112,14 +112,14 @@
                     <label for="role">Role:</label>
                     <select id="role" name="role" required onchange="toggleLocationSelects()">
                         <option value="">-- Select Role --</option>
-                        <%-- Use constants imported from AuthFilter --%>
+                        
                         <option value="<%= AuthFilter.ROLE_BAKERY_SHOP_STAFF%>" ${prevRole == AuthFilter.ROLE_BAKERY_SHOP_STAFF ? 'selected' : ''}>Bakery Shop Staff</option>
                         <option value="<%= AuthFilter.ROLE_WAREHOUSE_STAFF%>" ${prevRole == AuthFilter.ROLE_WAREHOUSE_STAFF ? 'selected' : ''}>Warehouse Staff</option>
                         <option value="<%= AuthFilter.ROLE_SENIOR_MANAGEMENT%>" ${prevRole == AuthFilter.ROLE_SENIOR_MANAGEMENT ? 'selected' : ''}>Senior Management</option>
                     </select>
                 </div>
 
-                <%-- Shop Selection (shown only if role is Shop Staff) --%>
+                
                 <div class="form-group" id="shopGroup">
                     <label for="shopId">Assign to Shop:</label>
                     <select id="shopId" name="shopId">
@@ -132,7 +132,7 @@
                     </select>
                 </div>
 
-                <%-- Warehouse Selection (shown only if role is Warehouse Staff) --%>
+                
                 <div class="form-group" id="warehouseGroup">
                     <label for="warehouseId">Assign to Warehouse:</label>
                     <select id="warehouseId" name="warehouseId">

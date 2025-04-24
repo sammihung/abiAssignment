@@ -35,7 +35,7 @@
 </head>
 <body>
 
-    <%-- Basic login & role check --%>
+    
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
@@ -47,18 +47,18 @@
     <div class="container">
         <h1>Update Warehouse Inventory (Warehouse ID: <c:out value="${userInfo.warehouseId}"/>)</h1>
 
-        <%-- Display Messages/Errors --%>
+        
         <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
         <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
         <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
 
-        <%-- Section 1: Display Current Inventory --%>
+        
         <h2>Current Stock Levels</h2>
         <table id="inventoryTable" class="display">
             <thead>
                 <tr>
                     <th>Fruit Name</th>
-                    <th>Source Country</th> <%-- ADDED HEADER --%>
+                    <th>Source Country</th> 
                     <th>Current Quantity</th>
                 </tr>
             </thead>
@@ -66,19 +66,19 @@
                 <c:forEach var="item" items="${inventoryList}">
                     <tr>
                         <td><c:out value="${item.fruitName}"/></td>
-                        <td><c:out value="${item.sourceCountry}"/></td> <%-- ADDED DATA CELL --%>
+                        <td><c:out value="${item.sourceCountry}"/></td> 
                         <td><c:out value="${item.quantity}"/></td>
                     </tr>
                 </c:forEach>
                 <c:if test="${empty inventoryList}">
                     <tr>
-                        <td colspan="3">No inventory records found for this warehouse.</td> <%-- Updated colspan --%>
+                        <td colspan="3">No inventory records found for this warehouse.</td> 
                     </tr>
                 </c:if>
             </tbody>
         </table>
 
-        <%-- Section 2: Form to Update/Add Inventory --%>
+        
         <h2>Set Inventory Level (Check-in / Adjustment)</h2>
         <div class="update-form">
             <form action="<c:url value='/updateWarehouseInventory'/>" method="POST">
@@ -105,10 +105,10 @@
     </div>
 
     <script>
-        // Initialize DataTables for the inventory table
+        
         $(document).ready( function () {
             $('#inventoryTable').DataTable({
-                 "order": [[ 0, "asc" ]] // Sort by fruit name ascending
+                 "order": [[ 0, "asc" ]] 
             });
         });
     </script>

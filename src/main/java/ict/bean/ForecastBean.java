@@ -1,23 +1,18 @@
 package ict.bean;
 
 import java.io.Serializable;
-import java.math.BigDecimal; // Use BigDecimal for potentially fractional averages
+import java.math.BigDecimal;
 
-/**
- * Represents data for the forecast report, showing average daily consumption.
- */
 public class ForecastBean implements Serializable {
 
     private String targetCountry;
     private int fruitId;
     private String fruitName;
-    private BigDecimal averageDailyConsumption; // Use BigDecimal for precision
+    private BigDecimal averageDailyConsumption;
 
-    // Default constructor
     public ForecastBean() {
     }
 
-    // Getters and Setters
     public String getTargetCountry() {
         return targetCountry;
     }

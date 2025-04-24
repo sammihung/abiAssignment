@@ -2,27 +2,22 @@ package ict.bean;
 
 import java.io.Serializable;
 
-/**
- * Represents a fruit that can be ordered from its source, including available quantity.
- */
-public class OrderableFruitBean extends FruitBean implements Serializable { // Extends FruitBean
+public class OrderableFruitBean extends FruitBean implements Serializable {
 
     private int availableSourceQuantity;
-    private int sourceWarehouseId; // ID of the source warehouse
+    private int sourceWarehouseId;
 
-    // Default constructor
     public OrderableFruitBean() {
-        super(); // Call superclass constructor
+        super();
     }
 
-    // Constructor inheriting from FruitBean and adding quantity/warehouse
-    public OrderableFruitBean(int fruitId, String fruitName, String sourceCountry, int availableSourceQuantity, int sourceWarehouseId) {
-        super(fruitId, fruitName, sourceCountry); // Call superclass constructor
+    public OrderableFruitBean(int fruitId, String fruitName, String sourceCountry, int availableSourceQuantity,
+            int sourceWarehouseId) {
+        super(fruitId, fruitName, sourceCountry);
         this.availableSourceQuantity = availableSourceQuantity;
         this.sourceWarehouseId = sourceWarehouseId;
     }
 
-    // Getters and Setters for new fields
     public int getAvailableSourceQuantity() {
         return availableSourceQuantity;
     }

@@ -17,7 +17,7 @@
             padding: 0;
         }
         .menu-bar {
-            margin-bottom: 20px; /* Add spacing below the menu */
+            margin-bottom: 20px; 
         }
         .register-container {
             background-color: #ffffff;
@@ -26,7 +26,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-            margin: 20px auto; /* Center the container */
+            margin: 20px auto; 
         }
         .register-container h2 {
             text-align: center;
@@ -71,7 +71,7 @@
         .submit-btn:hover {
             background-color: #0056b3;
         }
-       
+        
     </style>
 </head>
 <body>
@@ -114,7 +114,7 @@
             </c:choose>
             <button type="submit" class="submit-btn">Register</button>
         </form>
-  
+ 
     </div>
 </body>
 </html>

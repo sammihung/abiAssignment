@@ -9,10 +9,11 @@
     </head>
     <body>
         <h1>Welcome to the System</h1>
-        <p>Copyright &copy; <my:currentYear /> Acer International Bakery. All rights reserved.</p>
+        <p>Copyright &copy; <my:currentyear /> Acer International Bakery. All
+            rights reserved.</p>
         <c:if test="${not empty param.message}">
             <p style="color: green;">${param.message}</p>
         </c:if>
-        
+
     </body>
 </html>

@@ -4,8 +4,8 @@
 <html>
 <head>
     <title>Access Denied</title>
-    <%-- Include your common CSS/styles here --%>
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/resources/css/style.css"> <%-- Example CSS path --%>
+    
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/resources/css/style.css"> 
     <style>
         body { font-family: sans-serif; padding: 20px; }
         .error-message { color: red; border: 1px solid red; padding: 10px; margin-bottom: 15px; }
@@ -27,7 +27,7 @@
             %>
         </p>
         <p>Please contact the system administrator if you believe this is an error.</p>
-        <p><a href="${pageContext.request.contextPath}/welcome.jsp">Return to Welcome Page</a></p> <%-- Or link to login page if appropriate --%>
+        <p><a href="${pageContext.request.contextPath}/welcome.jsp">Return to Welcome Page</a></p> 
          <p><a href="${pageContext.request.contextPath}/login?action=logout">Logout</a></p>
     </div>
 </body>

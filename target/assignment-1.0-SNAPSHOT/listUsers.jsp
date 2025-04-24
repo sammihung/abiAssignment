@@ -1,20 +1,20 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%-- Include menu if needed --%>
+
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="ict.bean.UserBean" %> <%-- Import UserBean --%>
+<%@ page import="ict.bean.UserBean" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html>
-<head>
-    
-   
-    <title>${listTitle}</title> <%-- Use the title set by the servlet --%>
-    <%-- Link to DataTables CSS --%>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <style>
+    <head>
+
+        <title>${listTitle}</title>
+
+        <link rel="stylesheet" type="text/css"
+            href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+        <style>
         html, body {
             margin: 0;
             padding: 0;
@@ -33,93 +33,102 @@
         .dataTables_wrapper .dataTables_length { float: left; margin-bottom: 10px;}
         .dataTables_wrapper .dataTables_info { clear: both; float: left; padding-top: 10px;}
         .dataTables_wrapper .dataTables_paginate { float: right; padding-top: 10px;}
-        /* Removed .role-header styles */
+        
         .user-data-row {}
         .create-user-button { display: inline-block; padding: 8px 15px; margin-bottom: 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
         .create-user-button:hover { background-color: #0056b3; }
-        #jsErrorDiv { display: none; /* Hidden by default */ }
+        #jsErrorDiv { display: none;  }
     </style>
-</head>
-<body>
-    <jsp:include page="menu.jsp" />
+    </head>
+    <body>
+        <jsp:include page="menu.jsp" />
 
-    <h1>${listTitle}</h1> <%-- Display the title set by the servlet --%>
+        <h1>${listTitle}</h1>
 
-    <%-- Display messages/errors from servlet/redirect --%>
-    <div id="messageArea"> <%-- Container for messages --%>
-        <c:if test="${not empty param.message}"> <div class="message success"><c:out value="${param.message}"/></div> </c:if>
-        <c:if test="${not empty param.error}"> <div class="message error"><c:out value="${param.error}"/></div> </c:if>
-        <c:if test="${not empty requestScope.errorMessage}"> <div class="message error"><c:out value="${requestScope.errorMessage}"/></div> </c:if>
-        <%-- Div specifically for JavaScript errors --%>
-        <div id="jsErrorDiv" class="message error"></div>
-    </div>
-
-    <%-- Create User Button (only for Senior Management) - Link updated below --%>
-    <c:if test="${userInfo.role == 'Senior Management'}">
-        <%-- Change href from register.jsp to the new servlet URL --%>
-        <a href="<c:url value='/adminCreateUser'/>" class="create-user-button">Create New User</a>
-    </c:if>
-
-    <%-- User Table --%>
-    <c:choose>
-        <c:when test="${not empty usersByRole}">
-            <table id="userTable" class="display">
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Shop ID</th>
-                        <th>Warehouse ID</th>
-                        <th data-orderable="false">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%-- Iterate over the map (roles) --%>
-                    <c:forEach var="roleEntry" items="${usersByRole}">
-                        <%-- Iterate over the list of users for the current role --%>
-                        <c:forEach var="user" items="${roleEntry.value}">
-                            <tr id="user-row-${user.userId}" class="user-data-row">
-                                <td><c:out value="${user.userId}"/></td>
-                                <td><c:out value="${user.username}"/></td>
-                                <td><c:out value="${user.userEmail}"/></td>
-                                <td><c:out value="${user.role}"/></td>
-                                <td><c:out value="${user.shopId != null ? user.shopId : 'N/A'}"/></td>
-                                <td><c:out value="${user.warehouseId != null ? user.warehouseId : 'N/A'}"/></td>
-                                <td class="actions">
-                                    <a href="updateUser?userId=${user.userId}" class="update">Update</a>
-                                    <button type="button" class="delete" onclick="deleteUser('${user.userId}')">Delete</button>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </c:forEach>
-                </tbody>
-            </table>
-        </c:when>
-        <c:otherwise>
-            <c:if test="${empty requestScope.errorMessage}">
-                 <p>No users found matching the criteria.</p>
+        <div id="messageArea">
+            <c:if test="${not empty param.message}"> <div
+                    class="message success"><c:out
+                        value="${param.message}" /></div> </c:if>
+            <c:if test="${not empty param.error}"> <div
+                    class="message error"><c:out value="${param.error}" /></div>
             </c:if>
-        </c:otherwise>
-    </c:choose>
+            <c:if test="${not empty requestScope.errorMessage}"> <div
+                    class="message error"><c:out
+                        value="${requestScope.errorMessage}" /></div> </c:if>
 
-    <p><a href="welcome.jsp">Back to Welcome Page</a></p>
+            <div id="jsErrorDiv" class="message error"></div>
+        </div>
 
-    <%-- Include jQuery and DataTables JavaScript --%>
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <c:if test="${userInfo.role == 'Senior Management'}">
 
-    <%-- JavaScript for DataTables Initialization and Delete Function --%>
-    <script>
+            <a href="<c:url value='/adminCreateUser'/>"
+                class="create-user-button">Create New User</a>
+        </c:if>
+
+        <c:choose>
+            <c:when test="${not empty usersByRole}">
+                <table id="userTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Shop ID</th>
+                            <th>Warehouse ID</th>
+                            <th data-orderable="false">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <c:foreach var="roleEntry" items="${usersByRole}">
+
+                            <c:foreach var="user" items="${roleEntry.value}">
+                                <tr id="user-row-${user.userId}"
+                                    class="user-data-row">
+                                    <td><c:out value="${user.userId}" /></td>
+                                    <td><c:out value="${user.username}" /></td>
+                                    <td><c:out value="${user.userEmail}" /></td>
+                                    <td><c:out value="${user.role}" /></td>
+                                    <td><c:out
+                                            value="${user.shopId != null ? user.shopId : 'N/A'}" /></td>
+                                    <td><c:out
+                                            value="${user.warehouseId != null ? user.warehouseId : 'N/A'}" /></td>
+                                    <td class="actions">
+                                        <a
+                                            href="updateUser?userId=${user.userId}"
+                                            class="update">Update</a>
+                                        <button type="button" class="delete"
+                                            onclick="deleteUser('${user.userId}')">Delete</button>
+                                    </td>
+                                </tr>
+                            </c:foreach>
+                        </c:foreach>
+                    </tbody>
+                </table>
+            </c:when>
+            <c:otherwise>
+                <c:if test="${empty requestScope.errorMessage}">
+                    <p>No users found matching the criteria.</p>
+                </c:if>
+            </c:otherwise>
+        </c:choose>
+
+        <p><a href="welcome.jsp">Back to Welcome Page</a></p>
+
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+        <script
+            src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+        <script>
         $(document).ready(function() {
             $('#userTable').DataTable({
-                 "order": [[ 3, "asc" ], [1, "asc"]] // Sort by Role, then Username initially
+                 "order": [[ 3, "asc" ], [1, "asc"]] 
             });
         });
 
         function deleteUser(userId) {
-            // Clear previous JS errors
+            
             $('#jsErrorDiv').hide().text('');
 
             if (confirm('Are you sure you want to delete user ID: ' + userId + '?')) {
@@ -131,7 +140,7 @@
                 })
                 .then(response => {
                      if (!response.ok) {
-                        return response.text().then(text => { throw new Error(text || `Server responded with status: ${response.status}`); });
+                         return response.text().then(text => { throw new Error(text || `Server responded with status: ${response.status}`); });
                      }
                      const contentType = response.headers.get("content-type");
                      if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -144,11 +153,8 @@
                     console.log('Delete response:', result);
                     if (result.success) {
                         alert(result.message || 'User deleted successfully.');
-                        // Reload page is simpler when table structure might change (like removing last user of a role)
+                        
                         location.reload();
-                        // Or use DataTables API if grouping row wasn't an issue:
-                        // var table = $('#userTable').DataTable();
-                        // table.row('#user-row-' + userId).remove().draw(false);
                     } else {
                         $('#jsErrorDiv').text('Error deleting user: ' + (result.message || 'Failed. Check server logs.')).show();
                     }
@@ -161,5 +167,5 @@
         }
     </script>
 
-</body>
+    </body>
 </html>

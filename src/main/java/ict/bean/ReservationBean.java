@@ -1,30 +1,25 @@
 package ict.bean;
 
 import java.io.Serializable;
-import java.sql.Date; // Use java.sql.Date for date mapping
+import java.sql.Date;
 
-/**
- * Represents a reservation entity based on the 'reservations' table.
- */
 public class ReservationBean implements Serializable {
 
     private int reservationId;
     private int fruitId;
     private int shopId;
     private int quantity;
-    private Date reservationDate; // Use java.sql.Date
+    private Date reservationDate;
     private String status;
 
-    // Optional: Add fields to hold related object details (e.g., fruit name, shop name)
     private String fruitName;
     private String shopName;
 
-    // Default constructor
     public ReservationBean() {
     }
 
-    // Constructor with core fields
-    public ReservationBean(int reservationId, int fruitId, int shopId, int quantity, Date reservationDate, String status) {
+    public ReservationBean(int reservationId, int fruitId, int shopId, int quantity, Date reservationDate,
+            String status) {
         this.reservationId = reservationId;
         this.fruitId = fruitId;
         this.shopId = shopId;
@@ -32,8 +27,6 @@ public class ReservationBean implements Serializable {
         this.reservationDate = reservationDate;
         this.status = status;
     }
-
-    // Getters and Setters for all fields...
 
     public int getReservationId() {
         return reservationId;
@@ -83,8 +76,7 @@ public class ReservationBean implements Serializable {
         this.status = status;
     }
 
-     // Getters and Setters for optional fields
-     public String getFruitName() {
+    public String getFruitName() {
         return fruitName;
     }
 
@@ -99,7 +91,6 @@ public class ReservationBean implements Serializable {
     public void setShopName(String shopName) {
         this.shopName = shopName;
     }
-
 
     @Override
     public String toString() {

@@ -1,6 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> <%-- For functions like length --%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ page import="ict.bean.UserBean" %>
 
 
@@ -18,7 +18,7 @@
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
         h1 { color: #333; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; } /* Align top */
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; } 
         th { background-color: #f2f2f2; cursor: pointer; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .message, .error-message { padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; }
@@ -32,18 +32,18 @@
         .lender-selection select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-width: 200px;}
         .submit-button { display: block; width: 200px; margin: 25px auto; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; text-align: center; }
         .submit-button:hover { background-color: #218838; }
-        /* Style for lender list within table cell */
+        
         .lender-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; }
         .lender-list li { margin-bottom: 3px; }
         .lender-list .shop-name { font-weight: bold; }
         .lender-list .qty { color: green; }
-        /* No need for .no-lenders style anymore as the row won't be shown */
+        
     </style>
 </head>
 <body>
     <%@ include file="menu.jsp" %>
 
-    <%-- Basic login check --%>
+    
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getShopId() == null) {
@@ -56,7 +56,7 @@
         <h1>Borrow Fruits from Shops in <c:out value="${currentCity}"/></h1>
         <p>Enter quantities for the fruits you wish to borrow. Only fruits available from at least one other shop in your city are shown. Select ONE shop below to send the entire request to.</p>
 
-        <%-- Display Messages/Errors --%>
+        
         <c:if test="${not empty param.message}"> <div class="message success"><c:out value="${param.message}" /></div> </c:if>
         <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
         <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
@@ -73,16 +73,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <%-- Iterate through the enhanced fruit list --%>
+                    
                     <c:forEach var="fruitInfo" items="${borrowableFruits}">
-                        <%-- ***** ADDED IF CONDITION ***** --%>
-                        <%-- Only display the row if there is at least one lender for this fruit --%>
+                        
+                        
                         <c:if test="${not empty fruitInfo.lenderInfo}">
                             <tr>
                                 <td><c:out value="${fruitInfo.fruitName}"/> (ID: <c:out value="${fruitInfo.fruitId}"/>)</td>
                                 <td><c:out value="${fruitInfo.sourceCountry}"/></td>
                                 <td>
-                                    <%-- Display list of shops that have this fruit --%>
+                                    
                                     <ul class="lender-list">
                                         <c:forEach var="lender" items="${fruitInfo.lenderInfo}">
                                             <li>
@@ -93,33 +93,33 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <%-- Input name includes fruitId --%>
+                                    
                                     <input type="number" name="quantity_${fruitInfo.fruitId}" min="0" value="0">
                                 </td>
                             </tr>
                         </c:if>
-                        <%-- ***** END OF ADDED IF CONDITION ***** --%>
+                        
                     </c:forEach>
-                    <%-- Note: A message for "No borrowable fruits found" might be needed if the entire list is empty after filtering --%>
-                    <%-- You could add a check outside the loop or use JavaScript after DataTables initialization --%>
+                    
+                    
                 </tbody>
             </table>
 
-             <%-- Lender Selection Dropdown - Still needed to choose ONE shop for the whole request --%>
+             
              <div class="lender-selection">
-                <label for="lendingShopId">Borrow All Requested Items From:</label>
-                <select id="lendingShopId" name="lendingShopId" required>
-                    <option value="">-- Select a Shop in <c:out value="${currentCity}"/> --</option>
-                    <c:forEach var="lender" items="${potentialLenders}">
-                        <option value="${lender.shop_id}">
-                            <c:out value="${lender.shop_name}"/>
-                        </option>
-                    </c:forEach>
-                     <c:if test="${empty potentialLenders}">
-                         <option value="" disabled>No other shops found in your city.</option>
-                    </c:if>
-                </select>
-            </div>
+                 <label for="lendingShopId">Borrow All Requested Items From:</label>
+                 <select id="lendingShopId" name="lendingShopId" required>
+                     <option value="">-- Select a Shop in <c:out value="${currentCity}"/> --</option>
+                     <c:forEach var="lender" items="${potentialLenders}">
+                         <option value="${lender.shop_id}">
+                             <c:out value="${lender.shop_name}"/>
+                         </option>
+                     </c:forEach>
+                      <c:if test="${empty potentialLenders}">
+                           <option value="" disabled>No other shops found in your city.</option>
+                     </c:if>
+                 </select>
+             </div>
 
             <button type="submit" class="submit-button" ${empty potentialLenders ? 'disabled' : ''}>Submit Borrow Request</button>
         </form>
@@ -129,20 +129,11 @@
     <script>
         $(document).ready( function () {
             $('#borrowItemsTable').DataTable({
-                "paging": false, // Maybe disable paging
-                "order": [[ 0, "asc" ]], // Sort by Fruit Name
-                "columnDefs": [ // Optional: Disable sorting on availability column
-                   { "orderable": false, "targets": 2 }
+                "paging": false, 
+                "order": [[ 0, "asc" ]], 
+                "columnDefs": [ 
+                    { "orderable": false, "targets": 2 }
                  ]
-                 // Optional: Check if table body is empty after initialization and show a message
-                 // "drawCallback": function ( settings ) {
-                 //     var api = this.api();
-                 //     if (api.rows( {page:'current'} ).data().length === 0 ) {
-                 //         // Handle empty table case, e.g., display a message
-                 //         // console.log('Table is empty after filtering/initialization');
-                 //         // You might need to add a placeholder row or message div
-                 //     }
-                 // }
             });
         });
     </script>

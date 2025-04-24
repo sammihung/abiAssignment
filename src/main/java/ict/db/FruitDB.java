@@ -1,7 +1,5 @@
 package ict.db;
 
-import ict.bean.FruitBean; // Import the updated bean
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,28 +10,19 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Handles database operations for the 'fruits' table.
- */
+import ict.bean.FruitBean;
+
 public class FruitDB {
 
     private static final Logger LOGGER = Logger.getLogger(FruitDB.class.getName());
     private String dburl, username, password;
 
-    // Constructor
     public FruitDB(String dburl, String dbUser, String dbPassword) {
         this.dburl = dburl;
         this.username = dbUser;
         this.password = dbPassword;
     }
 
-    /**
-     * Establishes a database connection.
-     *
-     * @return A Connection object.
-     * @throws SQLException If a database access error occurs.
-     * @throws IOException If the driver class is not found.
-     */
     public Connection getConnection() throws SQLException, IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -47,21 +36,13 @@ public class FruitDB {
         return conn;
     }
 
-    /**
-     * Adds a new fruit to the 'fruits' table.
-     *
-     * @param fruitName The name of the fruit (required).
-     * @param sourceCountry The source country of the fruit (required).
-     * @return true if the fruit was added successfully, false otherwise.
-     */
     public boolean addFruit(String fruitName, String sourceCountry) {
         Connection c = null;
         PreparedStatement ps = null;
         boolean isSuccess = false;
-        // Updated SQL to match the 'fruits' table structure
+
         String sql = "INSERT INTO fruits (fruit_name, source_country) VALUES (?, ?)";
 
-        // Basic validation
         if (fruitName == null || fruitName.trim().isEmpty()
                 || sourceCountry == null || sourceCountry.trim().isEmpty()) {
             LOGGER.log(Level.WARNING, "Attempted to add fruit with empty name or source country.");
@@ -75,7 +56,7 @@ public class FruitDB {
             ps.setString(2, sourceCountry.trim());
 
             LOGGER.log(Level.INFO, "Executing SQL: {0} with Name='{1}', Country='{2}'",
-                    new Object[]{sql, fruitName.trim(), sourceCountry.trim()});
+                    new Object[] { sql, fruitName.trim(), sourceCountry.trim() });
             int rowsAffected = ps.executeUpdate();
 
             if (rowsAffected >= 1) {
@@ -86,9 +67,11 @@ public class FruitDB {
             }
 
         } catch (SQLException e) {
-            // Check for unique constraint violation (if fruit_name is unique)
+
             if (e.getSQLState().startsWith("23")) {
-                LOGGER.log(Level.WARNING, "Failed to add fruit '{0}' due to constraint violation (likely duplicate name).", fruitName.trim());
+                LOGGER.log(Level.WARNING,
+                        "Failed to add fruit '{0}' due to constraint violation (likely duplicate name).",
+                        fruitName.trim());
             } else {
                 LOGGER.log(Level.SEVERE, "Error adding fruit: " + fruitName.trim(), e);
             }
@@ -103,14 +86,9 @@ public class FruitDB {
         return isSuccess;
     }
 
-    /**
-     * Retrieves all fruits from the database.
-     *
-     * @return An ArrayList of FruitBean objects.
-     */
     public ArrayList<FruitBean> getAllFruits() {
         ArrayList<FruitBean> fruits = new ArrayList<>();
-        // Updated SQL to select from 'fruits' table
+
         String sql = "SELECT fruit_id, fruit_name, source_country FROM fruits ORDER BY fruit_name";
         Connection c = null;
         PreparedStatement ps = null;
@@ -140,7 +118,6 @@ public class FruitDB {
         }
         return fruits;
     }
-// Inside FruitDB.java
 
     public boolean updateFruit(int fruitId, String fruitName, String sourceCountry) {
         Connection c = null;
@@ -171,9 +148,10 @@ public class FruitDB {
                 LOGGER.log(Level.WARNING, "Fruit update failed: No rows affected for ID={0}", fruitId);
             }
         } catch (SQLException | IOException e) {
-            // Check for unique constraint violation if fruit_name should be unique
+
             if (e instanceof SQLException && ((SQLException) e).getSQLState().startsWith("23")) {
-                LOGGER.log(Level.WARNING, "Failed to update fruit ID {0} due to constraint violation (likely duplicate name).", fruitId);
+                LOGGER.log(Level.WARNING,
+                        "Failed to update fruit ID {0} due to constraint violation (likely duplicate name).", fruitId);
             } else {
                 LOGGER.log(Level.SEVERE, "Error updating fruit with ID=" + fruitId, e);
             }
@@ -209,13 +187,12 @@ public class FruitDB {
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching fruit with ID: " + fruitId, e);
         } finally {
-            closeQuietly(rs); // Use your existing helper method
+            closeQuietly(rs);
             closeQuietly(ps);
             closeQuietly(c);
         }
         return fruit;
     }
-// Inside FruitDB.java
 
     public boolean deleteFruit(int fruitId) {
         Connection c = null;
@@ -236,7 +213,7 @@ public class FruitDB {
                 LOGGER.log(Level.WARNING, "Fruit deletion failed. No fruit found with ID: {0}", fruitId);
             }
         } catch (SQLException | IOException e) {
-            // Check for foreign key constraint violation if fruits are referenced elsewhere
+
             if (e instanceof SQLException && ((SQLException) e).getSQLState().startsWith("23")) {
                 LOGGER.log(Level.WARNING, "Failed to delete fruit ID {0} due to foreign key constraint.", fruitId);
             } else {

@@ -2,9 +2,6 @@ package ict.bean;
 
 import java.io.Serializable;
 
-/**
- * Represents aggregated fruit needs, typically grouped by country and fruit.
- */
 public class AggregatedNeedBean implements Serializable {
 
     private String sourceCountry;
@@ -12,11 +9,9 @@ public class AggregatedNeedBean implements Serializable {
     private String fruitName;
     private int totalNeededQuantity;
 
-    // Default constructor
     public AggregatedNeedBean() {
     }
 
-    // Getters and Setters
     public String getSourceCountry() {
         return sourceCountry;
     }

@@ -16,7 +16,7 @@
         body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
         h1 { color: #333; text-align: center; }
-        /* Removed .filter-form styles */
+        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; cursor: pointer; }
@@ -26,7 +26,7 @@
         .back-link { display: block; text-align: center; margin-top: 20px; }
         .dataTables_wrapper { margin-top: 20px; }
         .chart-container { position: relative; margin: auto; margin-top: 30px; margin-bottom: 30px; height: 60vh; width: 80vw; max-width: 800px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background-color: #fff; }
-        /* Simple form for report type selection */
+        
         .report-type-form { margin-bottom: 20px; padding: 10px 0; }
         .report-type-form label { font-weight: bold; margin-right: 10px; }
         .report-type-form select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
@@ -37,7 +37,7 @@
 <body>
     <%@ include file="menu.jsp" %>
 
-    <%-- Basic login & role check --%>
+    
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Senior Management".equalsIgnoreCase(currentUser.getRole())) {
@@ -49,23 +49,23 @@
     <div class="container">
         <h1>${reportTitle}</h1>
 
-        <%-- Display Messages/Errors --%>
+        
         <c:if test="${not empty param.message}"> <div class="message success"><c:out value="${param.message}" /></div> </c:if>
         <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
         <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
 
-        <%-- Simplified Form: Only select Report Type --%>
+        
         <form action="<c:url value='/viewAdvancedReport'/>" method="GET" class="report-type-form">
             <label for="reportType">Report Type:</label>
             <select id="reportType" name="reportType">
                 <option value="needs" ${selectedReportType == 'needs' ? 'selected' : ''}>Aggregated Needs</option>
                 <option value="seasonalConsumption" ${selectedReportType == 'seasonalConsumption' ? 'selected' : ''}>Seasonal Consumption</option>
-                <%-- Add other report types here if needed later --%>
+                
             </select>
             <button type="submit">Generate Report</button>
         </form>
 
-        <%-- Conditionally display chart container --%>
+        
         <c:if test="${not empty reportData}">
             <c:choose>
                 <c:when test="${selectedReportType == 'needs'}">
@@ -81,7 +81,7 @@
             </c:choose>
         </c:if>
 
-        <%-- Report Data Table --%>
+        
         <h2>Data Table</h2>
         <table id="reportTable" class="display">
              <thead>
@@ -105,7 +105,7 @@
                      </c:when>
                      <c:when test="${selectedReportType == 'seasonalConsumption'}">
                           <c:forEach var="item" items="${reportData}">
-                             <tr><td><c:out value="${item.season}"/></td><td><c:out value="${item.fruitName}"/></td><td><c:out value="${item.totalConsumedQuantity}"/></td></tr>
+                              <tr><td><c:out value="${item.season}"/></td><td><c:out value="${item.fruitName}"/></td><td><c:out value="${item.totalConsumedQuantity}"/></td></tr>
                          </c:forEach>
                           <c:if test="${empty reportData}"><tr><td colspan="3">No consumption data found.</td></tr></c:if>
                      </c:when>
@@ -119,14 +119,14 @@
 
     <script>
         $(document).ready( function () {
-            // Initialize DataTable
-            $('#reportTable').DataTable({ /* Optional configurations */ });
+            
+            $('#reportTable').DataTable({});
 
-            // --- Chart.js Initialization (Conditional) ---
+            
             const reportType = "${selectedReportType}";
-            const chartData = []; // Raw data from JSP attribute
+            const chartData = []; 
 
-            // --- Data Preparation ---
+            
             <c:if test="${not empty reportData}">
                 <c:forEach var="item" items="${reportData}">
                     chartData.push({
@@ -140,7 +140,7 @@
                 </c:forEach>
             </c:if>
 
-            // --- Chart Generation ---
+            
             if (reportType === 'needs' && chartData.length > 0 && typeof Chart !== 'undefined') {
                 const labels = chartData.map(item => item.label);
                 const dataValues = chartData.map(item => item.value);
@@ -148,7 +148,7 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: { labels: labels, datasets: [{ label: 'Total Needed Quantity (Pending/Approved)', data: dataValues, backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1 }] },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity' } }, x: { title: { display: true, text: 'Fruit' } } }, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Aggregated Needs (All Time)' } } } // Updated title
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity' } }, x: { title: { display: true, text: 'Fruit' } } }, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Aggregated Needs (All Time)' } } } 
                 });
             } else if (reportType === 'seasonalConsumption' && chartData.length > 0 && typeof Chart !== 'undefined') {
                 const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -165,11 +165,11 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: { labels: seasons, datasets: chartDatasets },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity Consumed' } }, x: { title: { display: true, text: 'Season' } } }, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Seasonal Consumption (All Time)' } } } // Updated title
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantity Consumed' } }, x: { title: { display: true, text: 'Season' } } }, plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Seasonal Consumption (All Time)' } } } 
                 });
             }
 
-            // --- REMOVED Filter Dropdown JavaScript Logic ---
+            
 
         });
     </script>

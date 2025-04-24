@@ -2,21 +2,16 @@ package ict.bean;
 
 import java.io.Serializable;
 
-/**
- * Represents a row in an inventory summary report.
- */
 public class InventorySummaryBean implements Serializable {
 
-    private String groupingDimension; // e.g., Source Country, City, Warehouse Name
+    private String groupingDimension;
     private int fruitId;
     private String fruitName;
-    private long totalQuantity; // Use long for potentially large sums
+    private long totalQuantity;
 
-    // Default constructor
     public InventorySummaryBean() {
     }
 
-    // Getters and Setters
     public String getGroupingDimension() {
         return groupingDimension;
     }

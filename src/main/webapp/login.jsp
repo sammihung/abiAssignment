@@ -2,10 +2,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Login</title>
-    <style>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Login</title>
+        <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -69,27 +69,29 @@
         }
       
     </style>
-</head>
-<body>
-    <div class="login-container">
-        <h1>Login</h1>
-        <form method="post" action="login">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" required="required" placeholder="Enter your username">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" required="required" placeholder="Enter your password">
-            </div>
-            <c:if test="${not empty requestScope.errorMessage}">
-                <div class="error-message">
-                    <c:out value="${requestScope.errorMessage}" />
+    </head>
+    <body>
+        <div class="login-container">
+            <h1>Login</h1>
+            <form method="post" action="login">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username"
+                        required="required" placeholder="Enter your username">
                 </div>
-            </c:if>
-            <button type="submit" class="submit-btn">Login</button>
-        </form>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password"
+                        required="required" placeholder="Enter your password">
+                </div>
+                <c:if test="${not empty requestScope.errorMessage}">
+                    <div class="error-message">
+                        <c:out value="${requestScope.errorMessage}" />
+                    </div>
+                </c:if>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
 
-    </div>
-</body>
+        </div>
+    </body>
 </html>

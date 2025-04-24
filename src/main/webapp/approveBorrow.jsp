@@ -46,7 +46,6 @@
         <h1>Approve Incoming Borrow Requests</h1>
         <p>Review requests from other shops wanting to borrow items from your shop (ID: <c:out value="${userInfo.shopId}"/>).</p>
 
-        <%-- Display Messages/Errors --%>
         <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
         <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
         <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>

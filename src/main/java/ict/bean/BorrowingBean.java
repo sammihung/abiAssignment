@@ -3,29 +3,22 @@ package ict.bean;
 import java.io.Serializable;
 import java.sql.Date;
 
-/**
- * Represents a borrowing entity based on the 'borrowings' table.
- */
 public class BorrowingBean implements Serializable {
 
     private int borrowingId;
     private int fruitId;
-    private int borrowingShopId; // Shop lending the fruit
-    private int receivingShopId; // Shop receiving the fruit
+    private int borrowingShopId;
+    private int receivingShopId;
     private int quantity;
     private Date borrowingDate;
     private String status;
 
-    // Optional fields for display purposes
     private String fruitName;
     private String borrowingShopName;
     private String receivingShopName;
 
-    // Default constructor
     public BorrowingBean() {
     }
-
-    // Getters and Setters...
 
     public int getBorrowingId() {
         return borrowingId;

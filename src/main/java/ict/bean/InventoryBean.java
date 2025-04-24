@@ -2,27 +2,20 @@ package ict.bean;
 
 import java.io.Serializable;
 
-/**
- * Represents an inventory item, potentially in a shop or warehouse.
- */
 public class InventoryBean implements Serializable {
 
     private int inventoryId;
     private int fruitId;
-    private Integer shopId; // Use Integer to allow null
-    private Integer warehouseId; // Use Integer to allow null
+    private Integer shopId;
+    private Integer warehouseId;
     private int quantity;
 
-    // Additional fields for display purposes
     private String fruitName;
-    private String locationName; // e.g., Shop Name or Warehouse Name
-    private String sourceCountry; // ADDED: To store fruit's source country
+    private String locationName;
+    private String sourceCountry;
 
-    // Default constructor
     public InventoryBean() {
     }
-
-    // Getters and Setters for all fields...
 
     public int getInventoryId() {
         return inventoryId;
@@ -80,7 +73,6 @@ public class InventoryBean implements Serializable {
         this.locationName = locationName;
     }
 
-    // ADDED: Getter and Setter for sourceCountry
     public String getSourceCountry() {
         return sourceCountry;
     }
@@ -99,7 +91,7 @@ public class InventoryBean implements Serializable {
                 ", quantity=" + quantity +
                 ", fruitName='" + fruitName + '\'' +
                 ", locationName='" + locationName + '\'' +
-                ", sourceCountry='" + sourceCountry + '\'' + // Added to toString
+                ", sourceCountry='" + sourceCountry + '\'' +
                 '}';
     }
 }

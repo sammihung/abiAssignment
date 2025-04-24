@@ -30,7 +30,7 @@
         .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .back-link { display: block; text-align: center; margin-top: 20px; }
         .dataTables_filter, .dataTables_info, .dataTables_paginate { margin-bottom: 15px; }
-        .checkout-button { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; } /* Teal */
+        .checkout-button { background-color: #17a2b8; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; } 
         .checkout-button:hover { background-color: #138496; }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

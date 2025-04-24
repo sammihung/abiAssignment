@@ -5,14 +5,16 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Warehouse Inventory</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Update Warehouse Inventory</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <link rel="stylesheet" type="text/css"
+            href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8"
+            src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+        <style>
         body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
         h1, h2 { color: #333; text-align: center; }
@@ -32,86 +34,95 @@
         .back-link { display: block; text-align: center; margin-top: 20px; }
         .dataTables_filter, .dataTables_info, .dataTables_paginate { margin-bottom: 15px; }
     </style>
-</head>
-<body>
+    </head>
+    <body>
 
-    <%-- Basic login & role check --%>
-    <%
+        <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
-        if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?error=WarehouseStaffLoginRequired");
-            return;
+        if (currentUser == null ||
+        !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) ||
+        currentUser.getWarehouseId() == null) {
+        response.sendRedirect(request.getContextPath() +
+        "/login.jsp?error=WarehouseStaffLoginRequired");
+        return;
         }
-    %>
+        %>
 
-    <div class="container">
-        <h1>Update Warehouse Inventory (Warehouse ID: <c:out value="${userInfo.warehouseId}"/>)</h1>
+        <div class="container">
+            <h1>Update Warehouse Inventory (Warehouse ID: <c:out
+                    value="${userInfo.warehouseId}" />)</h1>
 
-        <%-- Display Messages/Errors --%>
-        <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
-        <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
-        <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
+            <c:if test="${not empty param.message}"> <div class="message"><c:out
+                        value="${param.message}" /></div> </c:if>
+            <c:if test="${not empty param.error}"> <div
+                    class="error-message"><c:out value="${param.error}" /></div>
+            </c:if>
+            <c:if test="${not empty errorMessage}"> <div
+                    class="error-message"><c:out
+                        value="${errorMessage}" /></div> </c:if>
 
-        <%-- Section 1: Display Current Inventory --%>
-        <h2>Current Stock Levels</h2>
-        <table id="inventoryTable" class="display">
-            <thead>
-                <tr>
-                    <th>Fruit Name</th>
-                    <th>Source Country</th> <%-- ADDED HEADER --%>
-                    <th>Current Quantity</th>
-                </tr>
-            </thead>
-            <tbody>
-                <c:forEach var="item" items="${inventoryList}">
+            <h2>Current Stock Levels</h2>
+            <table id="inventoryTable" class="display">
+                <thead>
                     <tr>
-                        <td><c:out value="${item.fruitName}"/></td>
-                        <td><c:out value="${item.sourceCountry}"/></td> <%-- ADDED DATA CELL --%>
-                        <td><c:out value="${item.quantity}"/></td>
+                        <th>Fruit Name</th>
+                        <th>Source Country</th>
+                        <th>Current Quantity</th>
                     </tr>
-                </c:forEach>
-                <c:if test="${empty inventoryList}">
-                    <tr>
-                        <td colspan="3">No inventory records found for this warehouse.</td> <%-- Updated colspan --%>
-                    </tr>
-                </c:if>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <c:foreach var="item" items="${inventoryList}">
+                        <tr>
+                            <td><c:out value="${item.fruitName}" /></td>
+                            <td><c:out value="${item.sourceCountry}" /></td>
+                            <td><c:out value="${item.quantity}" /></td>
+                        </tr>
+                    </c:foreach>
+                    <c:if test="${empty inventoryList}">
+                        <tr>
+                            <td colspan="3">No inventory records found for this
+                                warehouse.</td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
 
-        <%-- Section 2: Form to Update/Add Inventory --%>
-        <h2>Set Inventory Level (Check-in / Adjustment)</h2>
-        <div class="update-form">
-            <form action="<c:url value='/updateWarehouseInventory'/>" method="POST">
-                <div class="form-group">
-                    <label for="fruitId">Select Fruit:</label>
-                    <select id="fruitId" name="fruitId" required>
-                        <option value="">-- Select a Fruit --</option>
-                        <c:forEach var="fruit" items="${allFruits}">
-                            <option value="${fruit.fruitId}">
-                                <c:out value="${fruit.fruitName}"/> (<c:out value="${fruit.sourceCountry}"/>)
-                            </option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="newQuantity">Set New Quantity:</label>
-                    <input type="number" id="newQuantity" name="newQuantity" min="0" required placeholder="Enter the total quantity in the warehouse">
-                </div>
-                <button type="submit">Update/Set Quantity</button>
-            </form>
+            <h2>Set Inventory Level (Check-in / Adjustment)</h2>
+            <div class="update-form">
+                <form action="<c:url value='/updateWarehouseInventory'/>"
+                    method="POST">
+                    <div class="form-group">
+                        <label for="fruitId">Select Fruit:</label>
+                        <select id="fruitId" name="fruitId" required>
+                            <option value>-- Select a Fruit --</option>
+                            <c:foreach var="fruit" items="${allFruits}">
+                                <option value="${fruit.fruitId}">
+                                    <c:out value="${fruit.fruitName}" /> (<c:out
+                                        value="${fruit.sourceCountry}" />)
+                                </option>
+                            </c:foreach>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newQuantity">Set New Quantity:</label>
+                        <input type="number" id="newQuantity" name="newQuantity"
+                            min="0" required
+                            placeholder="Enter the total quantity in the warehouse">
+                    </div>
+                    <button type="submit">Update/Set Quantity</button>
+                </form>
+            </div>
+
         </div>
 
-
-    </div>
-
-    <script>
-        // Initialize DataTables for the inventory table
+        <script>
+        
         $(document).ready( function () {
             $('#inventoryTable').DataTable({
-                 "order": [[ 0, "asc" ]] // Sort by fruit name ascending
+                 "order": [[ 0, "asc" ]] 
             });
         });
     </script>
 
-</body>
+    </body>
 </html>
