@@ -15,7 +15,6 @@ ict\servlet\ListBorrowingsController.class
 ict\bean\WarehouseBean.class
 ict\servlet\CheckoutToShopController.class
 ict\servlet\FruitController.class
-ict\servlet\BorrowingController.class
 ict\bean\DeliveryBean.class
 ict\servlet\ListAllInventoryController.class
 ict\bean\InventoryBean.class
@@ -47,7 +46,9 @@ ict\db\DeliveryDB.class
 ict\bean\ForecastBean.class
 ict\servlet\AuthFilter.class
 ict\servlet\ApproveBorrowController.class
+ict\servlet\BatchBorrowController.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
 ict\servlet\RegisterController.class
+ict\bean\BorrowableFruitInfoBean.class
 ict\servlet\DeleteUsersController.class
 ict\servlet\UpdateUserController.class

@@ -53,7 +53,7 @@ public class AuthFilter implements Filter {
     public static final String ROLE_WAREHOUSE_STAFF = "Warehouse Staff";
     public static final String ROLE_BAKERY_SHOP_STAFF = "Bakery shop staff";
 
-       @Override
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         LOGGER.info("AuthFilter initialized.");
 
@@ -64,43 +64,45 @@ public class AuthFilter implements Filter {
         PROTECTED_RESOURCES.put("/viewAdvancedReport", smOnly);
         PROTECTED_RESOURCES.put("/viewConsumptionReport", smOnly);
         PROTECTED_RESOURCES.put("/viewInventoryReport", smOnly);
-        PROTECTED_RESOURCES.put("/listUsers", smOnly); // Assuming only SM lists/manages users
-        PROTECTED_RESOURCES.put("/updateUser", smOnly); // Assuming only SM updates users
-        PROTECTED_RESOURCES.put("/deleteUsers", smOnly); // Assuming only SM deletes users
-        PROTECTED_RESOURCES.put("/manageFruits", smOnly); // Example: If only SM manages fruit definitions (Create)
-        PROTECTED_RESOURCES.put("/updateFruit", smOnly); // Example: If only SM manages fruit definitions (Update)
-        PROTECTED_RESOURCES.put("/deleteFruit", smOnly); // Example: If only SM manages fruit definitions (Delete)
+        PROTECTED_RESOURCES.put("/listUsers", smOnly); // List all users
+        PROTECTED_RESOURCES.put("/updateUser", smOnly); // Update any user
+        PROTECTED_RESOURCES.put("/deleteUsers", smOnly); // Delete any user
+        PROTECTED_RESOURCES.put("/manageFruits", smOnly); // Add fruit types
+        PROTECTED_RESOURCES.put("/updateFruit", smOnly); // Update fruit types
+        PROTECTED_RESOURCES.put("/deleteFruit", smOnly); // Delete fruit types
         PROTECTED_RESOURCES.put("/listAllInventory", smOnly); // View all inventory report
+        PROTECTED_RESOURCES.put("/adminCreateUser", smOnly); // Admin create user page/action
+        PROTECTED_RESOURCES.put("/viewForecastReport", smOnly); // Forecast report
 
         // Warehouse Staff Only (or SM)
         Set<String> wsOrSm = Set.of(ROLE_WAREHOUSE_STAFF, ROLE_SENIOR_MANAGEMENT);
         PROTECTED_RESOURCES.put("/updateWarehouseInventory", wsOrSm);
-        PROTECTED_RESOURCES.put("/needsApproval", wsOrSm);
-        PROTECTED_RESOURCES.put("/arrangeDelivery", wsOrSm);
-        PROTECTED_RESOURCES.put("/checkoutToShop", wsOrSm);
+        PROTECTED_RESOURCES.put("/needsApproval", wsOrSm); // Approve reservations for source WH
+        PROTECTED_RESOURCES.put("/arrangeDelivery", wsOrSm); // Arrange WH-WH delivery from source WH
+        PROTECTED_RESOURCES.put("/checkoutToShop", wsOrSm); // Checkout WH-Shop delivery from central WH
 
         // Bakery Shop Staff Only (or SM)
         Set<String> bssOrSm = Set.of(ROLE_BAKERY_SHOP_STAFF, ROLE_SENIOR_MANAGEMENT);
-        PROTECTED_RESOURCES.put("/updateInventory", bssOrSm);
-        // *** UPDATED LINE BELOW ***
-        PROTECTED_RESOURCES.put("/orderFromSource", bssOrSm); // Was /reserveFruit
-        // *** END UPDATED LINE ***
+        PROTECTED_RESOURCES.put("/updateInventory", bssOrSm); // Update own shop inventory
+        PROTECTED_RESOURCES.put("/orderFromSource", bssOrSm); // New order page
         PROTECTED_RESOURCES.put("/listReservations", bssOrSm); // List own reservations
-        PROTECTED_RESOURCES.put("/borrowFruit", bssOrSm);
-        PROTECTED_RESOURCES.put("/approveBorrow", bssOrSm); // Approve/reject borrows for *own* shop
+        PROTECTED_RESOURCES.put("/batchBorrowFruit", bssOrSm); // New borrow page
+        PROTECTED_RESOURCES.put("/approveBorrow", bssOrSm); // Approve/reject borrows for own shop
 
         // Accessible by Multiple Roles (e.g., Viewing Lists) - SM can see all
-        // Specific filtering/data shown is handled within the Controllers for these lists
+        // Specific filtering/data shown is handled within the Controllers for these
+        // lists
         Set<String> allStaffOrSm = Set.of(ROLE_BAKERY_SHOP_STAFF, ROLE_WAREHOUSE_STAFF, ROLE_SENIOR_MANAGEMENT);
         PROTECTED_RESOURCES.put("/listFruits", allStaffOrSm); // All staff can view fruits
-        PROTECTED_RESOURCES.put("/listBorrowings", allStaffOrSm);
-        PROTECTED_RESOURCES.put("/listDeliveries", allStaffOrSm);
+        PROTECTED_RESOURCES.put("/listBorrowings", allStaffOrSm); // Controller filters by role
+        PROTECTED_RESOURCES.put("/listDeliveries", allStaffOrSm); // Controller filters by role
         PROTECTED_RESOURCES.put("/welcome.jsp", allStaffOrSm); // Welcome page after login
         PROTECTED_RESOURCES.put("/viewStaffStock", allStaffOrSm); // Staff stock overview page
 
-        // Add more mappings if needed
+        // Note: URLs like /login, /logout, /register, /resources/* are handled by
+        // PUBLIC_PATHS
+        // Note: /register.jsp and /login.jsp are also public
     }
-
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

@@ -68,7 +68,7 @@
                     <a href="<c:url value='/listFruits'/>">View Fruits</a>
                     <a href="<c:url value='/register.jsp'/>">Register</a>
                     <a href="<c:url value='/orderFromSource'/>">Order from Source</a>
-                    <a href="<c:url value='/borrowFruit'/>">Borrow Fruit</a>
+                    <a href="<c:url value='/batchBorrowFruit'/>">Borrow Fruit</a>
                     <a href="<c:url value='/listReservations'/>">View Reservations</a>
                     <a href="<c:url value='/updateInventory'/>">Update Inventory</a>
                     <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
@@ -93,7 +93,6 @@
                     <a href="<c:url value='/listBorrowings'/>">View Borrowings</a>
                     <a href="<c:url value='/listDeliveries'/>">View Deliveries</a>
                     <a href="<c:url value='/listAllInventory'/>">View All Inventory</a>
-                    <%-- ADDED: Forecast Report Link --%>
                     <a href="<c:url value='/viewForecastReport'/>">Forecast Report</a>
                 </c:when>
             </c:choose>

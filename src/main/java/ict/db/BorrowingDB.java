@@ -2,19 +2,21 @@ package ict.db;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection; // Make sure this bean exists if getAggregatedNeedsByCountry is used here
-import java.sql.Date; // Using BakeryShopBean
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager; // Make sure this bean exists if getAggregatedNeedsByCountry is used here
+import java.sql.PreparedStatement; // Using BakeryShopBean
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList; // Need this for WarehouseDB dependency
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.List; // Need this for WarehouseDB dependency
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ict.bean.BakeryShopBean;
+import ict.bean.BorrowableFruitInfoBean;
 import ict.bean.BorrowingBean;
 import ict.bean.ConsumptionDataBean;
 import ict.bean.ForecastBean;
@@ -1809,44 +1811,48 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
 
     /**
      * Calculates the average daily consumption ('Fulfilled' reservations)
-     * for each fruit, grouped by the destination shop's country, within a date range.
+     * for each fruit, grouped by the destination shop's country, within a date
+     * range.
      *
      * @param startDate The start date of the period (inclusive).
      * @param endDate   The end date of the period (inclusive).
-     * @return A list of ForecastBean objects. Returns empty list on error or if dates are invalid.
+     * @return A list of ForecastBean objects. Returns empty list on error or if
+     *         dates are invalid.
      */
     public List<ForecastBean> getAverageDailyConsumptionByFruitAndCountry(Date startDate, Date endDate) {
         List<ForecastBean> forecastData = new ArrayList<>();
 
         // Validate dates: end date must be on or after start date
         if (startDate == null || endDate == null || startDate.after(endDate)) {
-            LOGGER.log(Level.WARNING, "Invalid date range provided for forecast report: Start={0}, End={1}", new Object[]{startDate, endDate});
+            LOGGER.log(Level.WARNING, "Invalid date range provided for forecast report: Start={0}, End={1}",
+                    new Object[] { startDate, endDate });
             return forecastData; // Return empty list for invalid range
         }
 
         // Calculate number of days in the period (inclusive)
-        // Adding 1 because DATEDIFF calculates the difference; we need the count of days.
+        // Adding 1 because DATEDIFF calculates the difference; we need the count of
+        // days.
         // Using Java time for robust calculation
-        long periodDays = java.time.temporal.ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
+        long periodDays = java.time.temporal.ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate())
+                + 1;
         if (periodDays <= 0) {
-             LOGGER.log(Level.WARNING, "Date range results in zero or negative days for forecast report.");
-             return forecastData; // Avoid division by zero
+            LOGGER.log(Level.WARNING, "Date range results in zero or negative days for forecast report.");
+            return forecastData; // Avoid division by zero
         }
-
 
         // SQL to sum fulfilled quantity and group by target country and fruit
         String sql = "SELECT " +
-                     "  s.country AS target_country, " +
-                     "  r.fruit_id, " +
-                     "  f.fruit_name, " +
-                     "  SUM(r.quantity) AS total_consumed " +
-                     "FROM reservations r " +
-                     "JOIN fruits f ON r.fruit_id = f.fruit_id " +
-                     "JOIN shops s ON r.shop_id = s.shop_id " +
-                     "WHERE r.status = 'Fulfilled' " +
-                     "  AND r.reservation_date BETWEEN ? AND ? " + // Use reservation_date or a completion_date if available
-                     "GROUP BY s.country, r.fruit_id, f.fruit_name " +
-                     "ORDER BY s.country, f.fruit_name";
+                "  s.country AS target_country, " +
+                "  r.fruit_id, " +
+                "  f.fruit_name, " +
+                "  SUM(r.quantity) AS total_consumed " +
+                "FROM reservations r " +
+                "JOIN fruits f ON r.fruit_id = f.fruit_id " +
+                "JOIN shops s ON r.shop_id = s.shop_id " +
+                "WHERE r.status = 'Fulfilled' " +
+                "  AND r.reservation_date BETWEEN ? AND ? " + // Use reservation_date or a completion_date if available
+                "GROUP BY s.country, r.fruit_id, f.fruit_name " +
+                "ORDER BY s.country, f.fruit_name";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1870,13 +1876,15 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
                 // Calculate average using BigDecimal for precision
                 // Ensure java.math.BigDecimal and java.math.RoundingMode are imported
                 java.math.BigDecimal avgDaily = new java.math.BigDecimal(totalConsumed)
-                                        .divide(new java.math.BigDecimal(periodDays), 2, java.math.RoundingMode.HALF_UP); // 2 decimal places
+                        .divide(new java.math.BigDecimal(periodDays), 2, java.math.RoundingMode.HALF_UP); // 2 decimal
+                                                                                                          // places
 
                 bean.setAverageDailyConsumption(avgDaily);
                 forecastData.add(bean);
             }
-            LOGGER.log(Level.INFO, "Calculated average daily consumption for {0} fruit/country combinations between {1} and {2}",
-                       new Object[]{forecastData.size(), startDate, endDate});
+            LOGGER.log(Level.INFO,
+                    "Calculated average daily consumption for {0} fruit/country combinations between {1} and {2}",
+                    new Object[] { forecastData.size(), startDate, endDate });
 
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error calculating average daily consumption", e);
@@ -1887,5 +1895,224 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         }
         return forecastData;
     }
+    // Add these methods inside your existing BorrowingDB class
+    // Ensure access to bakeryShopDb
+
+    /**
+     * Retrieves a list of all other shops located in the same city as the
+     * requesting shop.
+     *
+     * @param city             The city of the requesting shop.
+     * @param requestingShopId The ID of the shop making the request (to exclude
+     *                         itself).
+     * @return A List of BakeryShopBean objects representing potential lenders.
+     */
+    public List<BakeryShopBean> getOtherShopsInCity(String city, int requestingShopId) {
+        List<BakeryShopBean> shops = new ArrayList<>();
+        // Query shops table, filtering by city and excluding the requesting shop ID
+        String sql = "SELECT shop_id, shop_name, city, country FROM shops WHERE city = ? AND shop_id != ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, city);
+            ps.setInt(2, requestingShopId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                // Use BakeryShopBean constructor or setters
+                BakeryShopBean shop = new BakeryShopBean();
+                shop.setShop_id(rs.getString("shop_id")); // Assuming String ID in bean
+                shop.setShop_name(rs.getString("shop_name"));
+                shop.setCity(rs.getString("city"));
+                shop.setCountry(rs.getString("country"));
+                shops.add(shop);
+            }
+            LOGGER.log(Level.INFO, "Found {0} other shops in city {1} for potential borrowing.",
+                    new Object[] { shops.size(), city });
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching other shops in city " + city, e);
+        } finally {
+            closeQuietly(rs);
+            closeQuietly(ps);
+            closeQuietly(conn);
+        }
+        return shops;
+    }
+
+    /**
+     * Creates multiple 'Pending' borrowing records directed at a single lending
+     * shop.
+     * Runs within a transaction. If any item fails, the whole batch is rolled back.
+     * Does NOT check or update inventory at this stage.
+     *
+     * @param borrowingShopId The ID of the shop requesting the items.
+     * @param lendingShopId   The ID of the shop the request is sent to.
+     * @param fruitIds        A list of fruit IDs being requested.
+     * @param quantities      A corresponding list of quantities.
+     * @return A status message indicating success or failure.
+     */
+    public String createMultipleBorrowRequests(int borrowingShopId, int lendingShopId, List<Integer> fruitIds,
+            List<Integer> quantities) {
+        Connection conn = null;
+        String statusMessage = "Borrow request submission failed: Unknown error.";
+
+        if (fruitIds == null || quantities == null || fruitIds.size() != quantities.size() || fruitIds.isEmpty()) {
+            return "Borrow request failed: Invalid request data.";
+        }
+        if (borrowingShopId == lendingShopId) {
+            return "Borrow request failed: Cannot request to borrow from yourself.";
+        }
+        // Basic validation for quantities
+        for (int qty : quantities) {
+            if (qty <= 0)
+                return "Borrow request failed: All quantities must be positive.";
+        }
+
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); // Start transaction
+
+            // Loop through each requested item and create a PENDING borrowing record
+            for (int i = 0; i < fruitIds.size(); i++) {
+                int fruitId = fruitIds.get(i);
+                int quantity = quantities.get(i);
+
+                // Use the helper method to add the record with "Pending" status
+                boolean requestAdded = addBorrowingRecord(fruitId, lendingShopId, borrowingShopId, quantity, "Pending",
+                        conn);
+
+                if (!requestAdded) {
+                    conn.rollback();
+                    // Fetch fruit name for better error message if possible
+                    String fruitName = fruitDb != null
+                            ? (fruitDb.getFruitById(fruitId) != null ? fruitDb.getFruitById(fruitId).getFruitName()
+                                    : "ID " + fruitId)
+                            : "ID " + fruitId;
+                    return "Borrow request failed: Could not create request record for " + fruitName + ".";
+                }
+                LOGGER.log(Level.INFO,
+                        "[TX-MultiBorrow] Pending borrow record added for FruitID={0}, Qty={1}, Lender={2}, Borrower={3}",
+                        new Object[] { fruitId, quantity, lendingShopId, borrowingShopId });
+            }
+
+            // If all records added successfully, commit
+            conn.commit();
+            statusMessage = "Borrow request submitted successfully for " + fruitIds.size()
+                    + " item(s)! Waiting for approval from the lending shop.";
+            LOGGER.log(Level.INFO, "[TX-MultiBorrow] Transaction committed.");
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error during multiple borrow request transaction. Borrower: " + borrowingShopId
+                    + ", Lender: " + lendingShopId, e);
+            statusMessage = "Borrow request failed: Database error occurred.";
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.SEVERE, "Rollback failed", ex);
+                }
+            }
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to close connection", e);
+                }
+            }
+        }
+        return statusMessage;
+    }
+    // Add this method inside your existing BorrowingDB class
+    // Ensure FruitDB (fruitDb) and BakeryShopDB (bakeryShopDb) are initialized in
+    // the constructor
+
+    /**
+     * Retrieves a list of all fruits, and for each fruit, finds potential lending
+     * shops
+     * in the specified city (excluding the requester) that have stock.
+     *
+     * @param city             The city of the requesting shop.
+     * @param requestingShopId The ID of the shop making the request (to exclude).
+     * @return A List of BorrowableFruitInfoBean objects.
+     */
+    public List<BorrowableFruitInfoBean> getBorrowableFruitsWithLenderInfo(String city, int requestingShopId) {
+        List<BorrowableFruitInfoBean> resultList = new ArrayList<>();
+        // Ensure fruitDb is available
+        if (this.fruitDb == null) {
+            LOGGER.log(Level.SEVERE, "FruitDB dependency is null in BorrowingDB. Cannot get all fruits.");
+            return resultList;
+        }
+
+        // 1. Get all fruits first
+        List<FruitBean> allFruits = fruitDb.getAllFruits(); // Assuming this method exists in FruitDB
+
+        if (allFruits == null || allFruits.isEmpty()) {
+            LOGGER.log(Level.WARNING, "No fruits found in the database.");
+            return resultList;
+        }
+
+        // 2. Prepare SQL to query inventory for a specific fruit in other shops in the
+        // city
+        String inventorySql = "SELECT i.shop_id, s.shop_name, i.quantity " +
+                "FROM inventory i JOIN shops s ON i.shop_id = s.shop_id " +
+                "WHERE i.fruit_id = ? AND s.city = ? AND i.shop_id != ? AND i.quantity > 0"; // Only shops with quantity
+                                                                                             // > 0
+
+        Connection conn = null;
+        PreparedStatement psInv = null;
+        ResultSet rsInv = null;
+
+        try {
+            conn = getConnection();
+            psInv = conn.prepareStatement(inventorySql);
+
+            // 3. For each fruit, find its potential lenders in the specified city
+            for (FruitBean fruit : allFruits) {
+                BorrowableFruitInfoBean infoBean = new BorrowableFruitInfoBean(fruit); // Create the wrapper bean
+                List<Map<String, Object>> lenders = new ArrayList<>();
+
+                // Set parameters for the inventory query
+                psInv.setInt(1, fruit.getFruitId());
+                psInv.setString(2, city);
+                psInv.setInt(3, requestingShopId);
+
+                rsInv = psInv.executeQuery();
+
+                // Collect lender info for this fruit
+                while (rsInv.next()) {
+                    Map<String, Object> lender = new HashMap<>();
+                    lender.put("shopId", rsInv.getInt("shop_id"));
+                    lender.put("shopName", rsInv.getString("shop_name"));
+                    lender.put("quantity", rsInv.getInt("quantity"));
+                    lenders.add(lender);
+                }
+                closeQuietly(rsInv); // Close inner ResultSet for each fruit
+
+                infoBean.setLenderInfo(lenders); // Attach the lender list to the fruit bean
+                resultList.add(infoBean); // Add the enhanced bean to the final list
+            }
+            LOGGER.log(Level.INFO, "Processed lender info for {0} fruits in city {1}",
+                    new Object[] { resultList.size(), city });
+
+        } catch (SQLException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching borrowable fruits with lender info for city " + city, e);
+        } finally {
+            // Close outer PreparedStatement and Connection once after the loop
+            closeQuietly(psInv);
+            closeQuietly(conn);
+        }
+        return resultList;
+    }
+
+    // --- Ensure this helper method exists (takes status as parameter) ---
+    // private boolean addBorrowingRecord(int fruitId, int lendingShopId, int
+    // borrowingShopId, int quantity, String status, Connection conn) throws
+    // SQLException { ... }
 
 } // End of BorrowingDB class

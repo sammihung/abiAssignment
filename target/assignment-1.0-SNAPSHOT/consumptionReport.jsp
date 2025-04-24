@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> <%-- Needed for escaping --%>
 <%@ page import="ict.bean.UserBean" %>
-
+<%@ include file="menu.jsp" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,7 +49,7 @@
 </head>
 <body>
     <%-- Optional: Include header/menu --%>
-    <%@ include file="menu.jsp" %>
+
 
     <%-- Basic login & role check --%>
     <%

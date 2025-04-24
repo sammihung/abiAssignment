@@ -18,7 +18,7 @@
         <filter-class>ict.servlet.AuthFilter</filter-class> </filter>
 
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/orderFromSource</url-pattern> </filter-mapping>
-    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/borrowFruit</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/batchBorrowFruit</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/manageFruits</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/updateFruit</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/deleteFruit</url-pattern> </filter-mapping>
@@ -41,35 +41,11 @@
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/welcome.jsp</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/listAllInventory</url-pattern> </filter-mapping>
     <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewStaffStock</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/adminCreateUser</url-pattern> </filter-mapping>
+    <filter-mapping> <filter-name>AuthFilter</filter-name> <url-pattern>/viewForecastReport</url-pattern> </filter-mapping>
     <session-config>
         <session-timeout>30</session-timeout> </session-config>
-<servlet>
-    <servlet-name>AdminCreateUserController</servlet-name>
-    <servlet-class>ict.servlet.AdminCreateUserController</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>AdminCreateUserController</servlet-name>
-    <url-pattern>/adminCreateUser</url-pattern>
-</servlet-mapping>
 
-<filter-mapping>
-    <filter-name>AuthFilter</filter-name>
-    <url-pattern>/adminCreateUser</url-pattern>
-</filter-mapping>
-
-<servlet>
-    <servlet-name>ForecastReportController</servlet-name>
-    <servlet-class>ict.servlet.ForecastReportController</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>ForecastReportController</servlet-name>
-    <url-pattern>/viewForecastReport</url-pattern>
-</servlet-mapping>
-
-<filter-mapping>
-    <filter-name>AuthFilter</filter-name>
-    <url-pattern>/viewForecastReport</url-pattern>
-</filter-mapping>
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
