@@ -1,19 +1,23 @@
 package ict.db;
 
-import ict.bean.AggregatedNeedBean;
-import ict.bean.ConsumptionDataBean;
-import ict.bean.ForecastBean;
-import ict.bean.FruitBean; // Assuming FruitDB is available
-import ict.bean.ReservationBean;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection; // Assuming FruitDB is available
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import ict.bean.AggregatedNeedBean;
+import ict.bean.ConsumptionDataBean;
+import ict.bean.ForecastBean;
+import ict.bean.ReservationBean;
 
 /**
  * Handles database operations related to reservations, including checking
@@ -48,234 +52,6 @@ public class ReservationDB {
         return DriverManager.getConnection(dburl, username, password);
     }
 
-    /**
-     * Finds the warehouse ID marked as the source for a given fruit's source
-     * country.
-     *
-     * @param fruitId The ID of the fruit.
-     * @param conn An existing database connection.
-     * @return The source warehouse ID, or -1 if not found.
-     * @throws SQLException if a database access error occurs.
-     */
-    private int getSourceWarehouseId(int fruitId, Connection conn) throws SQLException {
-        int sourceWarehouseId = -1;
-        // First, get the source country of the fruit
-        FruitBean fruit = fruitDb.getFruitById(fruitId); // Assumes FruitDB has getFruitById
-        if (fruit == null || fruit.getSourceCountry() == null || fruit.getSourceCountry().trim().isEmpty()) {
-            LOGGER.log(Level.WARNING, "Fruit not found or source country missing for fruit ID: {0}", fruitId);
-            return -1; // Cannot proceed without source country
-        }
-        String sourceCountry = fruit.getSourceCountry();
-        LOGGER.log(Level.INFO, "Finding source warehouse for fruit ID {0} from country: {1}",
-                new Object[]{fruitId, sourceCountry});
-
-        // Now find the warehouse in that country marked as source
-        // Consider city as well if needed: AND city = ?
-        String sql = "SELECT warehouse_id FROM warehouses WHERE country = ? AND is_source = 1 LIMIT 1";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, sourceCountry);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                sourceWarehouseId = rs.getInt("warehouse_id");
-                LOGGER.log(Level.INFO, "Source warehouse found: ID={0}", sourceWarehouseId);
-            } else {
-                LOGGER.log(Level.WARNING, "No source warehouse found for country: {0}", sourceCountry);
-            }
-        } finally {
-            closeQuietly(rs);
-            closeQuietly(ps);
-            // Do not close the connection here, it's managed by the calling method
-        }
-        return sourceWarehouseId;
-    }
-
-    /**
-     * Gets the current inventory quantity for a specific fruit in a specific
-     * warehouse.
-     *
-     * @param fruitId The ID of the fruit.
-     * @param warehouseId The ID of the warehouse.
-     * @param conn An existing database connection.
-     * @return The current quantity, or -1 if inventory record not found.
-     * @throws SQLException if a database access error occurs.
-     */
-    private int getInventoryQuantity(int fruitId, int warehouseId, Connection conn) throws SQLException {
-        int quantity = -1;
-        String sql = "SELECT quantity FROM inventory WHERE fruit_id = ? AND warehouse_id = ?";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, fruitId);
-            ps.setInt(2, warehouseId);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                quantity = rs.getInt("quantity");
-                LOGGER.log(Level.INFO, "Inventory check: FruitID={0}, WarehouseID={1}, Quantity={2}",
-                        new Object[]{fruitId, warehouseId, quantity});
-            } else {
-                LOGGER.log(Level.WARNING, "No inventory record found for FruitID={0}, WarehouseID={1}",
-                        new Object[]{fruitId, warehouseId});
-                // Treat missing inventory as 0 available quantity
-                quantity = 0;
-            }
-        } finally {
-            closeQuietly(rs);
-            closeQuietly(ps);
-            // Do not close the connection here
-        }
-        return quantity;
-    }
-
-    /**
-     * Adds a reservation record to the database.
-     *
-     * @param fruitId The ID of the fruit.
-     * @param shopId The ID of the reserving shop.
-     * @param quantity The quantity being reserved.
-     * @param conn An existing database connection (part of a transaction).
-     * @return true if insertion was successful, false otherwise.
-     * @throws SQLException if a database access error occurs.
-     */
-    private boolean addReservationRecord(int fruitId, int shopId, int quantity, Connection conn) throws SQLException {
-        String sql = "INSERT INTO reservations (fruit_id, shop_id, quantity, reservation_date, status) VALUES (?, ?, ?, CURDATE(), ?)";
-        PreparedStatement ps = null;
-        String initialStatus = "Pending"; // Or "Confirmed" depending on logic
-        try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, fruitId);
-            ps.setInt(2, shopId);
-            ps.setInt(3, quantity);
-            ps.setString(4, initialStatus);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected >= 1;
-        } finally {
-            closeQuietly(ps);
-            // Do not close the connection here
-        }
-    }
-
-    /**
-     * Updates the inventory quantity for a specific fruit in a specific
-     * warehouse. Assumes the inventory record exists.
-     *
-     * @param fruitId The ID of the fruit.
-     * @param warehouseId The ID of the warehouse.
-     * @param quantityChange The amount to change the quantity by (e.g.,
-     * negative for reservation).
-     * @param conn An existing database connection (part of a transaction).
-     * @return true if update was successful, false otherwise.
-     * @throws SQLException if a database access error occurs.
-     */
-    private boolean updateInventoryRecord(int fruitId, int warehouseId, int quantityChange, Connection conn)
-            throws SQLException {
-        // Ensure we don't go below zero with the update
-        String sql = "UPDATE inventory SET quantity = quantity + ? WHERE fruit_id = ? AND warehouse_id = ? AND quantity >= ?";
-        PreparedStatement ps = null;
-        try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, quantityChange); // quantityChange will be negative for reservation
-            ps.setInt(2, fruitId);
-            ps.setInt(3, warehouseId);
-            ps.setInt(4, -quantityChange); // Ensure current quantity is >= amount to be deducted
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected >= 1;
-        } finally {
-            closeQuietly(ps);
-            // Do not close the connection here
-        }
-    }
-
-    /**
-     * Creates a reservation for a fruit from its source city/warehouse,
-     * checking inventory and performing operations within a transaction.
-     *
-     * @param fruitId The ID of the fruit to reserve.
-     * @param shopId The ID of the shop making the reservation.
-     * @param quantity The quantity to reserve.
-     * @return A status message indicating success or the reason for failure.
-     */
-    public String createReservationFromSource(int fruitId, int shopId, int quantity) {
-        Connection conn = null;
-        String statusMessage = "Reservation failed: Unknown error.";
-
-        if (quantity <= 0) {
-            return "Reservation failed: Quantity must be positive.";
-        }
-
-        try {
-            conn = getConnection();
-            conn.setAutoCommit(false); // Start transaction
-
-            // 1. Find the source warehouse for the fruit
-            int sourceWarehouseId = getSourceWarehouseId(fruitId, conn);
-            if (sourceWarehouseId == -1) {
-                conn.rollback(); // Rollback transaction
-                return "Reservation failed: Could not find a source warehouse for this fruit.";
-            }
-
-            // 2. Check current inventory at the source warehouse
-            int currentQuantity = getInventoryQuantity(fruitId, sourceWarehouseId, conn);
-            if (currentQuantity < quantity) {
-                conn.rollback(); // Rollback transaction
-                return "Reservation failed: Insufficient stock available at the source warehouse. Available: "
-                        + currentQuantity;
-            }
-
-            // 3. Add the reservation record
-            boolean reservationAdded = addReservationRecord(fruitId, shopId, quantity, conn);
-            if (!reservationAdded) {
-                conn.rollback();
-                return "Reservation failed: Could not create reservation record.";
-            }
-            LOGGER.log(Level.INFO, "Reservation record added for FruitID={0}, ShopID={1}, Qty={2}",
-                    new Object[]{fruitId, shopId, quantity});
-
-            // 4. Update (decrease) the inventory at the source warehouse
-            boolean inventoryUpdated = updateInventoryRecord(fruitId, sourceWarehouseId, -quantity, conn); // Decrease
-            // quantity
-            if (!inventoryUpdated) {
-                // This could happen if stock changed between check and update, or if record
-                // vanished.
-                conn.rollback();
-                return "Reservation failed: Could not update inventory. Stock might have changed.";
-            }
-            LOGGER.log(Level.INFO, "Inventory updated for FruitID={0}, WarehouseID={1}, Change={2}",
-                    new Object[]{fruitId, sourceWarehouseId, -quantity});
-
-            // If all steps succeeded, commit the transaction
-            conn.commit();
-            statusMessage = "Reservation created successfully!";
-            LOGGER.log(Level.INFO, "Transaction committed for reservation.");
-
-        } catch (SQLException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Error during reservation transaction for fruit ID " + fruitId, e);
-            statusMessage = "Reservation failed: Database error occurred.";
-            if (conn != null) {
-                try {
-                    LOGGER.log(Level.WARNING, "Rolling back transaction due to error.");
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to rollback transaction", ex);
-                }
-            }
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true); // Restore default commit behavior
-                    conn.close();
-                } catch (SQLException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to close connection", e);
-                }
-            }
-        }
-        return statusMessage;
-    }
-
-    // --- Helper Method for closing resources ---
     private void closeQuietly(AutoCloseable resource) {
         if (resource != null) {
             try {
@@ -325,15 +101,7 @@ public class ReservationDB {
         }
         return reservations;
     }
-    // Add this method inside your existing ReservationDB class
 
-    /**
-     * Retrieves all reservations made by a specific shop.
-     *
-     * @param shopId The ID of the shop whose reservations are to be fetched.
-     * @return A List of ReservationBean objects, potentially including joined
-     * data.
-     */
     public List<ReservationBean> getReservationsForShop(int shopId) {
         List<ReservationBean> reservations = new ArrayList<>();
         // SQL to fetch reservations for a specific shop, joining with fruits for the
@@ -364,7 +132,7 @@ public class ReservationDB {
                 reservations.add(bean);
             }
             LOGGER.log(Level.INFO, "Fetched {0} reservations for ShopID={1}",
-                    new Object[]{reservations.size(), shopId});
+                    new Object[] { reservations.size(), shopId });
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching reservations for shop " + shopId, e);
         } finally {
@@ -415,7 +183,7 @@ public class ReservationDB {
                 needs.add(need);
             }
             LOGGER.log(Level.INFO, "Fetched {0} aggregated needs for country: {1}",
-                    new Object[]{needs.size(), sourceCountry});
+                    new Object[] { needs.size(), sourceCountry });
 
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching aggregated needs for country " + sourceCountry, e);
@@ -431,11 +199,12 @@ public class ReservationDB {
      * Updates the status of all 'Pending' reservations for a specific fruit
      * originating from a specific source country. Runs within a transaction.
      *
-     * @param fruitId The ID of the fruit whose reservations are to be approved.
+     * @param fruitId       The ID of the fruit whose reservations are to be
+     *                      approved.
      * @param sourceCountry The source country of the fruit (for verification).
-     * @param newStatus The new status to set (e.g., "Approved").
+     * @param newStatus     The new status to set (e.g., "Approved").
      * @return true if the update was successful (at least one record updated),
-     * false otherwise.
+     *         false otherwise.
      */
     public boolean approveReservationsForFruit(int fruitId, String sourceCountry, String newStatus) {
         Connection conn = null;
@@ -466,13 +235,13 @@ public class ReservationDB {
                 success = true;
                 LOGGER.log(Level.INFO,
                         "Successfully approved {0} reservations for FruitID={1}, Country={2}. Status set to {3}",
-                        new Object[]{rowsAffected, fruitId, sourceCountry, newStatus});
+                        new Object[] { rowsAffected, fruitId, sourceCountry, newStatus });
             } else {
                 // No records matched (maybe already approved, or wrong fruit/country combo)
                 conn.rollback(); // Rollback, although nothing changed
                 success = false; // Indicate nothing was approved
                 LOGGER.log(Level.WARNING, "No pending reservations found to approve for FruitID={0}, Country={1}.",
-                        new Object[]{fruitId, sourceCountry});
+                        new Object[] { fruitId, sourceCountry });
             }
 
         } catch (SQLException | IOException e) {
@@ -555,7 +324,8 @@ public class ReservationDB {
      * shop's country. This helps determine what needs to be delivered where.
      *
      * @param sourceWarehouseId The ID of the source warehouse fulfilling the
-     * needs. (Used indirectly to infer the source country via fruits table).
+     *                          needs. (Used indirectly to infer the source country
+     *                          via fruits table).
      * @return A List of DeliveryNeedBean objects.
      */
     public List<DeliveryNeedBean> getApprovedNeedsGroupedByFruitAndCountry(int sourceWarehouseId) {
@@ -573,11 +343,11 @@ public class ReservationDB {
                 + "JOIN shops s ON r.shop_id = s.shop_id "
                 + "JOIN warehouses w_source ON f.source_country = w_source.country "
                 + // Link fruit to source warehouse
-                // country
+                  // country
                 "WHERE r.status = 'Approved' "
                 + "  AND w_source.warehouse_id = ? AND w_source.is_source = 1 "
                 + // Ensure fruit is from this source
-                // warehouse
+                  // warehouse
                 "GROUP BY r.fruit_id, f.fruit_name, s.country "
                 + "HAVING SUM(r.quantity) > 0 "
                 + "ORDER BY s.country, f.fruit_name";
@@ -601,7 +371,7 @@ public class ReservationDB {
                 needs.add(need);
             }
             LOGGER.log(Level.INFO, "Fetched {0} grouped approved needs originating from WarehouseID={1}",
-                    new Object[]{needs.size(), sourceWarehouseId});
+                    new Object[] { needs.size(), sourceWarehouseId });
 
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching grouped approved needs for WarehouseID=" + sourceWarehouseId, e);
@@ -617,11 +387,11 @@ public class ReservationDB {
      * Creates a delivery record in the database. To be called within
      * arrangeDeliveryTransaction.
      *
-     * @param fruitId Fruit ID.
+     * @param fruitId         Fruit ID.
      * @param fromWarehouseId Source Warehouse ID.
-     * @param toWarehouseId Destination (Central) Warehouse ID.
-     * @param quantity Quantity being delivered.
-     * @param conn Active transaction connection.
+     * @param toWarehouseId   Destination (Central) Warehouse ID.
+     * @param quantity        Quantity being delivered.
+     * @param conn            Active transaction connection.
      * @return true if successful, false otherwise.
      * @throws SQLException On database error.
      */
@@ -650,10 +420,10 @@ public class ReservationDB {
      * destined for a specific target country. To be called within
      * arrangeDeliveryTransaction.
      *
-     * @param fruitId Fruit ID.
+     * @param fruitId       Fruit ID.
      * @param targetCountry The destination country (based on shop location).
-     * @param newStatus The new status (e.g., 'Shipped', 'In Transit').
-     * @param conn Active transaction connection.
+     * @param newStatus     The new status (e.g., 'Shipped', 'In Transit').
+     * @param conn          Active transaction connection.
      * @return The number of reservation records updated.
      * @throws SQLException On database error.
      */
@@ -671,7 +441,7 @@ public class ReservationDB {
             ps.setString(3, targetCountry);
             int rowsAffected = ps.executeUpdate();
             LOGGER.log(Level.INFO, "[TX] Updated status to {0} for {1} reservations of FruitID={2} destined for {3}",
-                    new Object[]{newStatus, rowsAffected, fruitId, targetCountry});
+                    new Object[] { newStatus, rowsAffected, fruitId, targetCountry });
             return rowsAffected;
         } finally {
             closeQuietly(ps); // ps is closed, conn remains open for transaction
@@ -683,10 +453,10 @@ public class ReservationDB {
      * Calculates quantity, finds central warehouse, checks inventory, creates
      * delivery, updates source inventory, and updates reservation statuses.
      *
-     * @param fruitId The ID of the fruit to deliver.
+     * @param fruitId         The ID of the fruit to deliver.
      * @param fromWarehouseId The ID of the source warehouse initiating the
-     * delivery.
-     * @param targetCountry The target country for the delivery.
+     *                        delivery.
+     * @param targetCountry   The target country for the delivery.
      * @return A status message indicating success or failure reason.
      */
     public String arrangeDeliveryTransaction(int fruitId, int fromWarehouseId, String targetCountry) {
@@ -722,7 +492,7 @@ public class ReservationDB {
                 return "Delivery arrangement failed: No 'Approved' reservations found for this fruit and target country.";
             }
             LOGGER.log(Level.INFO, "[TX] Calculated quantity to deliver for FruitID={0}, TargetCountry={1}: {2}",
-                    new Object[]{fruitId, targetCountry, quantityToDeliver});
+                    new Object[] { fruitId, targetCountry, quantityToDeliver });
 
             // 2. Find the central warehouse in the target country
             int toWarehouseId = localWarehouseDb.findCentralWarehouseInCountry(targetCountry);
@@ -731,7 +501,7 @@ public class ReservationDB {
                 return "Delivery arrangement failed: Could not find a central warehouse in " + targetCountry + ".";
             }
             LOGGER.log(Level.INFO, "[TX] Found target central WarehouseID={0} for Country={1}",
-                    new Object[]{toWarehouseId, targetCountry});
+                    new Object[] { toWarehouseId, targetCountry });
 
             // 3. Check inventory at the source warehouse (fromWarehouseId)
             // Use the existing helper method from BorrowingDB logic if available and
@@ -748,7 +518,7 @@ public class ReservationDB {
             }
             LOGGER.log(Level.INFO,
                     "[TX] Source inventory check passed for WarehouseID={0}, FruitID={1}. Have: {2}, Need: {3}",
-                    new Object[]{fromWarehouseId, fruitId, currentSourceQuantity, quantityToDeliver});
+                    new Object[] { fromWarehouseId, fruitId, currentSourceQuantity, quantityToDeliver });
 
             // 4. Create the delivery record
             boolean deliveryAdded = addDeliveryRecord(fruitId, fromWarehouseId, toWarehouseId, quantityToDeliver, conn);
@@ -779,10 +549,10 @@ public class ReservationDB {
             if (reservationsUpdated == 0) {
                 LOGGER.log(Level.WARNING,
                         "[TX] No reservations were updated to '{0}' status for FruitID={1}, TargetCountry={2}. This might indicate an issue.",
-                        new Object[]{newReservationStatus, fruitId, targetCountry});
+                        new Object[] { newReservationStatus, fruitId, targetCountry });
             } else {
                 LOGGER.log(Level.INFO, "[TX] {0} reservation statuses updated to {1}.",
-                        new Object[]{reservationsUpdated, newReservationStatus});
+                        new Object[] { reservationsUpdated, newReservationStatus });
             }
 
             // If all steps succeeded, commit the transaction
@@ -818,10 +588,10 @@ public class ReservationDB {
      * Gets the current inventory quantity for a specific fruit in a specific
      * warehouse. To be called within a transaction.
      *
-     * @param fruitId The ID of the fruit.
+     * @param fruitId     The ID of the fruit.
      * @param warehouseId The ID of the warehouse.
-     * @param conn An existing database connection (must be part of the
-     * transaction).
+     * @param conn        An existing database connection (must be part of the
+     *                    transaction).
      * @return The current quantity, or 0 if inventory record not found.
      * @throws SQLException if a database access error occurs.
      */
@@ -839,11 +609,13 @@ public class ReservationDB {
             if (rs.next()) {
                 quantity = rs.getInt("quantity");
             } else {
-                LOGGER.log(Level.WARNING, "[TX] No inventory record found for FruitID={0}, WarehouseID={1}", new Object[]{fruitId, warehouseId});
+                LOGGER.log(Level.WARNING, "[TX] No inventory record found for FruitID={0}, WarehouseID={1}",
+                        new Object[] { fruitId, warehouseId });
                 // Treat missing record as 0 quantity
             }
         } finally {
-            // IMPORTANT: Only close ResultSet and PreparedStatement here, NOT the connection
+            // IMPORTANT: Only close ResultSet and PreparedStatement here, NOT the
+            // connection
             closeQuietly(rs);
             closeQuietly(ps);
         }
@@ -856,7 +628,7 @@ public class ReservationDB {
      * range.
      *
      * @param startDate The start date of the period (inclusive).
-     * @param endDate The end date of the period (inclusive).
+     * @param endDate   The end date of the period (inclusive).
      * @return A list of ConsumptionDataBean objects (itemName = fruitName).
      */
     public List<ConsumptionDataBean> getConsumptionSummaryByFruit(Date startDate, Date endDate) {
@@ -899,7 +671,7 @@ public class ReservationDB {
                 reportData.add(new ConsumptionDataBean(fruitName, totalConsumed));
             }
             LOGGER.log(Level.INFO, "Fetched {0} rows for consumption summary by fruit between {1} and {2}",
-                    new Object[]{reportData.size(), startDate, endDate});
+                    new Object[] { reportData.size(), startDate, endDate });
 
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching consumption summary by fruit", e);
@@ -917,16 +689,17 @@ public class ReservationDB {
      * warehouse. Assumes the inventory record exists and shop_id is NULL. To be
      * called within a transaction.
      *
-     * @param fruitId The ID of the fruit.
-     * @param warehouseId The ID of the warehouse.
+     * @param fruitId        The ID of the fruit.
+     * @param warehouseId    The ID of the warehouse.
      * @param quantityChange The amount to change the quantity by (e.g.,
-     * negative for shipment).
-     * @param conn An existing database connection (must be part of the
-     * transaction).
+     *                       negative for shipment).
+     * @param conn           An existing database connection (must be part of the
+     *                       transaction).
      * @return true if update was successful (affected 1 row), false otherwise.
      * @throws SQLException if a database access error occurs.
      */
-    private boolean updateWarehouseInventory(int fruitId, int warehouseId, int quantityChange, Connection conn) throws SQLException {
+    private boolean updateWarehouseInventory(int fruitId, int warehouseId, int quantityChange, Connection conn)
+            throws SQLException {
         // SQL targets record where shop_id is NULL
         String sql = "UPDATE inventory SET quantity = quantity + ? WHERE fruit_id = ? AND warehouse_id = ? AND shop_id IS NULL";
         // Add check to prevent negative inventory if decreasing quantity
@@ -945,14 +718,18 @@ public class ReservationDB {
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0 && quantityChange < 0) {
-                LOGGER.log(Level.WARNING, "[TX] Update failed for decreasing warehouse inventory - possibly record missing or insufficient quantity. FruitID={0}, WarehouseID={1}", new Object[]{fruitId, warehouseId});
+                LOGGER.log(Level.WARNING,
+                        "[TX] Update failed for decreasing warehouse inventory - possibly record missing or insufficient quantity. FruitID={0}, WarehouseID={1}",
+                        new Object[] { fruitId, warehouseId });
                 return false; // Indicate failure if decreasing didn't affect rows
             }
             if (rowsAffected == 0 && quantityChange > 0) {
                 // This case should ideally be handled by an insert if needed,
                 // but arrangeDelivery assumes stock exists to be decreased.
                 // Log a warning if trying to increase stock but record not found.
-                LOGGER.log(Level.WARNING, "[TX] Update failed for increasing warehouse inventory - record missing? FruitID={0}, WarehouseID={1}", new Object[]{fruitId, warehouseId});
+                LOGGER.log(Level.WARNING,
+                        "[TX] Update failed for increasing warehouse inventory - record missing? FruitID={0}, WarehouseID={1}",
+                        new Object[] { fruitId, warehouseId });
                 return false; // Indicate failure as the record wasn't updated
             }
 
@@ -962,8 +739,8 @@ public class ReservationDB {
             // IMPORTANT: Only close PreparedStatement here, NOT the connection
             closeQuietly(ps);
         }
-    }    // Add these methods inside your existing ReservationDB class
-    // Assuming access to FruitDB, ShopDB/BakeryShopDB
+    } // Add these methods inside your existing ReservationDB class
+      // Assuming access to FruitDB, ShopDB/BakeryShopDB
 
     /**
      * Bean to hold aggregated needs data. Reusing AggregatedNeedBean from
@@ -976,19 +753,19 @@ public class ReservationDB {
     /**
      * Gets aggregated pending/approved needs based on different filters.
      *
-     * @param filterType "shop", "city", or "country".
+     * @param filterType  "shop", "city", or "country".
      * @param filterValue The specific shop ID, city name, or country name.
-     * @param startDate Start date for filtering reservations.
-     * @param endDate End date for filtering reservations.
+     * @param startDate   Start date for filtering reservations.
+     * @param endDate     End date for filtering reservations.
      * @return List of AggregatedNeedBean.
      */
-    public List<AggregatedNeedBean> getAggregatedNeeds(String filterType, String filterValue, Date startDate, Date endDate) {
+    public List<AggregatedNeedBean> getAggregatedNeeds(String filterType, String filterValue, Date startDate,
+            Date endDate) {
         List<AggregatedNeedBean> needs = new ArrayList<>();
         StringBuilder sqlBuilder = new StringBuilder(
                 "SELECT f.fruit_name, f.fruit_id, SUM(r.quantity) AS total_needed_quantity "
-                + "FROM reservations r "
-                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
-        );
+                        + "FROM reservations r "
+                        + "JOIN fruits f ON r.fruit_id = f.fruit_id ");
         List<Object> params = new ArrayList<>();
 
         // Add join and filter based on type
@@ -1045,7 +822,8 @@ public class ReservationDB {
                 // need.setSourceCountry(filterValue); // Example if filtering by country
                 needs.add(need);
             }
-            LOGGER.log(Level.INFO, "Fetched {0} aggregated needs for filter [{1}={2}]", new Object[]{needs.size(), filterType, filterValue});
+            LOGGER.log(Level.INFO, "Fetched {0} aggregated needs for filter [{1}={2}]",
+                    new Object[] { needs.size(), filterType, filterValue });
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching aggregated needs", e);
         } finally {
@@ -1094,29 +872,29 @@ public class ReservationDB {
     /**
      * Gets seasonal consumption ('Fulfilled' reservations) based on filters.
      *
-     * @param filterType "shop", "city", or "country".
+     * @param filterType  "shop", "city", or "country".
      * @param filterValue The specific shop ID, city name, or country name.
-     * @param startDate Start date for filtering reservations.
-     * @param endDate End date for filtering reservations.
+     * @param startDate   Start date for filtering reservations.
+     * @param endDate     End date for filtering reservations.
      * @return List of SeasonalConsumptionBean.
      */
-    public List<SeasonalConsumptionBean> getSeasonalConsumption(String filterType, String filterValue, Date startDate, Date endDate) {
+    public List<SeasonalConsumptionBean> getSeasonalConsumption(String filterType, String filterValue, Date startDate,
+            Date endDate) {
         List<SeasonalConsumptionBean> consumption = new ArrayList<>();
         StringBuilder sqlBuilder = new StringBuilder(
                 "SELECT "
-                + "  CASE "
-                + // Define seasons (adjust months as needed for location/fiscal year)
-                "    WHEN MONTH(r.reservation_date) IN (3, 4, 5) THEN 'Spring' "
-                + "    WHEN MONTH(r.reservation_date) IN (6, 7, 8) THEN 'Summer' "
-                + "    WHEN MONTH(r.reservation_date) IN (9, 10, 11) THEN 'Autumn' "
-                + "    ELSE 'Winter' "
-                + // Dec, Jan, Feb
-                "  END AS season, "
-                + "  f.fruit_name, "
-                + "  SUM(r.quantity) as total_consumed "
-                + "FROM reservations r "
-                + "JOIN fruits f ON r.fruit_id = f.fruit_id "
-        );
+                        + "  CASE "
+                        + // Define seasons (adjust months as needed for location/fiscal year)
+                        "    WHEN MONTH(r.reservation_date) IN (3, 4, 5) THEN 'Spring' "
+                        + "    WHEN MONTH(r.reservation_date) IN (6, 7, 8) THEN 'Summer' "
+                        + "    WHEN MONTH(r.reservation_date) IN (9, 10, 11) THEN 'Autumn' "
+                        + "    ELSE 'Winter' "
+                        + // Dec, Jan, Feb
+                        "  END AS season, "
+                        + "  f.fruit_name, "
+                        + "  SUM(r.quantity) as total_consumed "
+                        + "FROM reservations r "
+                        + "JOIN fruits f ON r.fruit_id = f.fruit_id ");
         List<Object> params = new ArrayList<>();
 
         // Add join and filter based on type
@@ -1147,7 +925,9 @@ public class ReservationDB {
         params.add(endDate);
 
         sqlBuilder.append("GROUP BY season, f.fruit_name ");
-        sqlBuilder.append("ORDER BY FIELD(season, 'Spring', 'Summer', 'Autumn', 'Winter'), f.fruit_name"); // Order seasons correctly
+        sqlBuilder.append("ORDER BY FIELD(season, 'Spring', 'Summer', 'Autumn', 'Winter'), f.fruit_name"); // Order
+                                                                                                           // seasons
+                                                                                                           // correctly
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -1169,7 +949,8 @@ public class ReservationDB {
                 item.setTotalConsumedQuantity(rs.getLong("total_consumed"));
                 consumption.add(item);
             }
-            LOGGER.log(Level.INFO, "Fetched {0} seasonal consumption rows for filter [{1}={2}]", new Object[]{consumption.size(), filterType, filterValue});
+            LOGGER.log(Level.INFO, "Fetched {0} seasonal consumption rows for filter [{1}={2}]",
+                    new Object[] { consumption.size(), filterType, filterValue });
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error fetching seasonal consumption", e);
         } finally {
@@ -1188,23 +969,26 @@ public class ReservationDB {
      * range.
      *
      * @param startDate The start date of the period (inclusive).
-     * @param endDate The end date of the period (inclusive).
+     * @param endDate   The end date of the period (inclusive).
      * @return A list of ForecastBean objects. Returns empty list on error or if
-     * dates are invalid.
+     *         dates are invalid.
      */
     public List<ForecastBean> getAverageDailyConsumptionByFruitAndCountry(Date startDate, Date endDate) {
         List<ForecastBean> forecastData = new ArrayList<>();
 
         // Validate dates: end date must be on or after start date
         if (startDate == null || endDate == null || startDate.after(endDate)) {
-            LOGGER.log(Level.WARNING, "Invalid date range provided for forecast report: Start={0}, End={1}", new Object[]{startDate, endDate});
+            LOGGER.log(Level.WARNING, "Invalid date range provided for forecast report: Start={0}, End={1}",
+                    new Object[] { startDate, endDate });
             return forecastData; // Return empty list for invalid range
         }
 
         // Calculate number of days in the period (inclusive)
-        // Adding 1 because DATEDIFF calculates the difference; we need the count of days.
+        // Adding 1 because DATEDIFF calculates the difference; we need the count of
+        // days.
         // Using Java time for robust calculation
-        long periodDays = java.time.temporal.ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
+        long periodDays = java.time.temporal.ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate())
+                + 1;
         if (periodDays <= 0) {
             LOGGER.log(Level.WARNING, "Date range results in zero or negative days for forecast report.");
             return forecastData; // Avoid division by zero
@@ -1251,8 +1035,9 @@ public class ReservationDB {
                 bean.setAverageDailyConsumption(avgDaily);
                 forecastData.add(bean);
             }
-            LOGGER.log(Level.INFO, "Calculated average daily consumption for {0} fruit/country combinations between {1} and {2}",
-                    new Object[]{forecastData.size(), startDate, endDate});
+            LOGGER.log(Level.INFO,
+                    "Calculated average daily consumption for {0} fruit/country combinations between {1} and {2}",
+                    new Object[] { forecastData.size(), startDate, endDate });
 
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error calculating average daily consumption", e);

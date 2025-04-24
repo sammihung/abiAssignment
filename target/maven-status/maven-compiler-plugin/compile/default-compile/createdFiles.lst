@@ -48,7 +48,6 @@ ict\servlet\AuthFilter.class
 ict\servlet\ApproveBorrowController.class
 ict\servlet\BatchBorrowController.class
 ict\servlet\assignment\resources\JakartaEE10Resource.class
-ict\servlet\RegisterController.class
 ict\bean\BorrowableFruitInfoBean.class
 ict\servlet\DeleteUsersController.class
 ict\servlet\UpdateUserController.class

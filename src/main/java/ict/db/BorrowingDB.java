@@ -76,102 +76,6 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
     // Borrowing Related Methods (from previous steps)
     // ========================================================================
 
-    public List<Map<String, Object>> findPotentialLenders(int fruitId, int requiredQuantity, String city,
-            int requestingShopId) {
-        List<Map<String, Object>> lenders = new ArrayList<>();
-        String sql = "SELECT s.shop_id, s.shop_name, i.quantity " +
-                "FROM shops s JOIN inventory i ON s.shop_id = i.shop_id " +
-                "WHERE s.city = ? AND s.shop_id != ? AND i.fruit_id = ? AND i.quantity >= ?";
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, city);
-            ps.setInt(2, requestingShopId);
-            ps.setInt(3, fruitId);
-            ps.setInt(4, requiredQuantity);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> lenderInfo = new HashMap<>();
-                lenderInfo.put("shopId", rs.getInt("shop_id"));
-                lenderInfo.put("shopName", rs.getString("shop_name"));
-                lenderInfo.put("availableQuantity", rs.getInt("quantity"));
-                lenders.add(lenderInfo);
-            }
-        } catch (SQLException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Error finding potential lenders", e);
-        } finally {
-            closeQuietly(rs);
-            closeQuietly(ps);
-            closeQuietly(conn);
-        }
-        return lenders;
-    }
-
-    public String createBorrowing(int fruitId, int lendingShopId, int borrowingShopId, int quantity) {
-        Connection conn = null;
-        String statusMessage = "Borrowing request failed: Unknown error.";
-
-        if (quantity <= 0) {
-            return "Borrowing request failed: Quantity must be positive.";
-        }
-        if (lendingShopId == borrowingShopId) {
-            return "Borrowing request failed: Cannot borrow from yourself.";
-        }
-
-        try {
-            conn = getConnection();
-            conn.setAutoCommit(false); // Start transaction
-
-            // OPTIONAL: Check if lender has enough stock *now*, but don't fail if not,
-            // just proceed to create the pending request. The approval step will re-check.
-            // int currentQuantity = getInventoryQuantityForShop(fruitId, lendingShopId,
-            // conn);
-            // if (currentQuantity < quantity) {
-            // LOGGER.log(Level.INFO, "Lending shop ({0}) may not have enough stock ({1})
-            // for request ({2}), but creating pending request anyway.", new
-            // Object[]{lendingShopId, currentQuantity, quantity});
-            // }
-
-            // Add the borrowing record with 'Pending' status
-            boolean borrowingAdded = addBorrowingRecord(fruitId, lendingShopId, borrowingShopId, quantity, "Pending",
-                    conn); // Use "Pending" status
-            if (!borrowingAdded) {
-                conn.rollback();
-                return "Borrowing request failed: Could not create borrowing record.";
-            }
-
-            // DO NOT UPDATE INVENTORY HERE - Will be done upon approval
-
-            conn.commit();
-            statusMessage = "Borrowing request submitted successfully! Waiting for approval.";
-            LOGGER.log(Level.INFO, "[TX] Borrowing request created (Pending). Transaction committed.");
-
-        } catch (SQLException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Error during borrowing request creation", e);
-            statusMessage = "Borrowing request failed: Database error occurred (" + e.getMessage() + ")";
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    LOGGER.log(Level.SEVERE, "Rollback failed", ex);
-                }
-            }
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to close connection", e);
-                }
-            }
-        }
-        return statusMessage;
-    }
-
     private boolean addBorrowingRecord(int fruitId, int lendingShopId, int borrowingShopId, int quantity, String status,
             Connection conn) throws SQLException {
         String sql = "INSERT INTO borrowings (fruit_id, borrowing_shop_id, receiving_shop_id, quantity, borrowing_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)";
@@ -450,24 +354,6 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
             closeQuietly(ps);
         }
         return quantity;
-    }
-
-    private boolean addBorrowingRecord(int fruitId, int lendingShopId, int borrowingShopId, int quantity,
-            Connection conn) throws SQLException {
-        String sql = "INSERT INTO borrowings (fruit_id, borrowing_shop_id, receiving_shop_id, quantity, borrowing_date, status) VALUES (?, ?, ?, ?, CURDATE(), ?)";
-        PreparedStatement ps = null;
-        String initialStatus = "Borrowed";
-        try {
-            ps = conn.prepareStatement(sql);
-            ps.setInt(1, fruitId);
-            ps.setInt(2, lendingShopId);
-            ps.setInt(3, borrowingShopId);
-            ps.setInt(4, quantity);
-            ps.setString(5, initialStatus);
-            return ps.executeUpdate() >= 1;
-        } finally {
-            closeQuietly(ps);
-        }
     }
 
     private boolean updateShopInventory(int fruitId, int shopId, int quantityChange, Connection conn)
