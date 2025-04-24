@@ -1,9 +1,14 @@
 package ict.servlet;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import ict.bean.DeliveryBean;
 import ict.bean.UserBean;
-import ict.db.DeliveryDB; // Use the new DB class
-
+import ict.db.DeliveryDB;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,16 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-/**
- * Servlet to list delivery records based on user role.
- */
-@WebServlet(name = "ListDeliveriesController", urlPatterns = {"/listDeliveries"})
+@WebServlet(name = "ListDeliveriesController", urlPatterns = { "/listDeliveries" })
 public class ListDeliveriesController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ListDeliveriesController.class.getName());
@@ -58,21 +54,19 @@ public class ListDeliveriesController extends HttpServlet {
         try {
             if ("Senior Management".equalsIgnoreCase(userRole)) {
                 listTitle = "All Delivery Records";
-                deliveryList = deliveryDb.getAllDeliveries(); // Fetch all
+                deliveryList = deliveryDb.getAllDeliveries();
             } else if ("Warehouse Staff".equalsIgnoreCase(userRole) && currentUser.getWarehouseId() != null) {
-                 listTitle = "My Warehouse Delivery Records";
-                 int warehouseId = Integer.parseInt(currentUser.getWarehouseId());
-                 deliveryList = deliveryDb.getDeliveriesForWarehouse(warehouseId); // Fetch for specific warehouse
-            }
-            // Shop staff currently don't see warehouse delivery records
-            else {
-                 LOGGER.log(Level.INFO, "User role ({0}) does not have access to delivery list.", userRole);
-                 request.setAttribute("errorMessage", "Your role does not have access to view delivery records.");
+                listTitle = "My Warehouse Delivery Records";
+                int warehouseId = Integer.parseInt(currentUser.getWarehouseId());
+                deliveryList = deliveryDb.getDeliveriesForWarehouse(warehouseId);
+            } else {
+                LOGGER.log(Level.INFO, "User role ({0}) does not have access to delivery list.", userRole);
+                request.setAttribute("errorMessage", "Your role does not have access to view delivery records.");
             }
 
         } catch (NumberFormatException e) {
-             LOGGER.log(Level.SEVERE, "Invalid Warehouse ID format for user: " + currentUser.getUsername(), e);
-             request.setAttribute("errorMessage", "Invalid user profile (Warehouse ID).");
+            LOGGER.log(Level.SEVERE, "Invalid Warehouse ID format for user: " + currentUser.getUsername(), e);
+            request.setAttribute("errorMessage", "Invalid user profile (Warehouse ID).");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching delivery records.", e);
             request.setAttribute("errorMessage", "Error retrieving delivery data.");

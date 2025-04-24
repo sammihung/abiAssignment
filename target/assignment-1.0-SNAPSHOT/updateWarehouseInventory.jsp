@@ -13,13 +13,10 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
-        /* Reset default margins and paddings */
         html, body {
             margin: 0;
-            padding: 0;
         }
 
-        /* Ensure the menu bar has no unintended spacing */
         .menu-bar {
             margin: 0;
             padding: 0;
@@ -47,7 +44,6 @@
 </head>
 <body>
 
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
@@ -59,19 +55,16 @@
     <div class="container">
         <h1>Update Warehouse Inventory (Warehouse ID: <c:out value="${userInfo.warehouseId}"/>)</h1>
 
-        <%-- Display Messages/Errors from Redirect --%>
         <c:if test="${not empty param.message}">
             <div class="message"><c:out value="${param.message}" /></div>
         </c:if>
         <c:if test="${not empty param.error}">
             <div class="error-message"><c:out value="${param.error}" /></div>
         </c:if>
-         <%-- Display Errors from Forward (e.g., page load error) --%>
          <c:if test="${not empty errorMessage}">
             <div class="error-message"><c:out value="${errorMessage}" /></div>
         </c:if>
 
-        <%-- Section 1: Display Current Inventory --%>
         <h2>Current Stock Levels</h2>
         <table id="inventoryTable" class="display">
             <thead>
@@ -95,7 +88,6 @@
             </tbody>
         </table>
 
-        <%-- Section 2: Form to Update/Add Inventory --%>
         <h2>Set Inventory Level (Check-in / Adjustment)</h2>
         <div class="update-form">
             <form action="<c:url value='/updateWarehouseInventory'/>" method="POST">
@@ -123,15 +115,12 @@
     </div>
 
     <script>
-        // Initialize DataTables for the inventory table
         $(document).ready( function () {
             $('#inventoryTable').DataTable({
-                 "order": [[ 0, "asc" ]] // Sort by fruit name ascending
+                 "order": [[ 0, "asc" ]]
             });
         });
     </script>
 
-    <%-- Optional: Include footer --%>
-    <%-- <jsp:include page="footer.jsp" /> --%>
 </body>
 </html>

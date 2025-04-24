@@ -37,10 +37,8 @@
     </style>
 </head>
 <body>
-    <%-- Optional: Include header/menu --%>
-   <jsp:include page="menu.jsp" /> 
+    <jsp:include page="menu.jsp" />
 
-    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || (!"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) && !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()))) {
@@ -60,7 +58,6 @@
             <div class="error-message"><c:out value="${errorMessage}" /></div>
         </c:if>
 
-        <%-- 1. Own Stock --%>
         <h2>My Location Stock (<c:out value="${locationName}"/>)</h2>
         <table id="ownStockTable" class="display compact">
             <thead><tr><th>Fruit Name</th><th>Quantity</th></tr></thead>
@@ -72,7 +69,6 @@
             </tbody>
         </table>
 
-        <%-- 2. Other Shops in City (Only for Shop Staff) --%>
         <c:if test="${isShopStaff}">
             <h2>Other Shops in <c:out value="${locationCity}"/></h2>
             <table id="otherShopStockTable" class="display compact">
@@ -86,9 +82,8 @@
             </table>
         </c:if>
 
-        <%-- 3. Central Warehouses in Country --%>
         <h2>Central Warehouses in <c:out value="${locationCountry}"/></h2>
-         <table id="centralStockTable" class="display compact">
+        <table id="centralStockTable" class="display compact">
             <thead><tr><th>Warehouse Name</th><th>Fruit Name</th><th>Quantity</th></tr></thead>
             <tbody>
                 <c:forEach var="item" items="${centralWarehouseStock}">
@@ -98,32 +93,16 @@
             </tbody>
         </table>
 
-        <%-- 4. Source Warehouses in Country (Optional - Uncomment if needed) --%>
-        <%--
-        <h2>Source Warehouses in <c:out value="${locationCountry}"/></h2>
-         <table id="sourceStockTable" class="display compact">
-            <thead><tr><th>Warehouse Name</th><th>Fruit Name</th><th>Quantity</th></tr></thead>
-            <tbody>
-                <c:forEach var="item" items="${sourceWarehouseStock}">
-                    <tr><td><c:out value="${item.locationName}"/></td><td><c:out value="${item.fruitName}"/></td><td><c:out value="${item.quantity}"/></td></tr>
-                </c:forEach>
-                <c:if test="${empty sourceWarehouseStock}"><tr><td colspan="3">No stock data found for source warehouses in your country.</td></tr></c:if>
-            </tbody>
-        </table>
-        --%>
-
         <a href="javascript:history.back()" class="back-link">Back</a>
     </div>
 
     <script>
-        // Initialize DataTables for each table
         $(document).ready( function () {
             $('#ownStockTable').DataTable({"paging": false, "info": false, "order": [[ 0, "asc" ]]});
             <c:if test="${isShopStaff}">
                 $('#otherShopStockTable').DataTable({"order": [[ 0, "asc" ], [1, "asc"]]});
             </c:if>
             $('#centralStockTable').DataTable({"order": [[ 0, "asc" ], [1, "asc"]]});
-            <%-- $('#sourceStockTable').DataTable({"order": [[ 0, "asc" ], [1, "asc"]]}); --%>
         });
     </script>
 

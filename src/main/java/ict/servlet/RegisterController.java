@@ -24,14 +24,12 @@ public class RegisterController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Retrieve form data
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String email = request.getParameter("email");
         String shopId = request.getParameter("shopId");
         String warehouseId = request.getParameter("warehouseId");
 
-        // Determine role-specific data
         String role = "Unknown";
         if (shopId != null && !shopId.isEmpty()) {
             role = "Bakery shop staff";
@@ -39,10 +37,8 @@ public class RegisterController extends HttpServlet {
             role = "Warehouse Staff";
         }
 
-        // Save the user using the database layer
         boolean isRegistered = db.addUser(username, password, email, role, shopId, warehouseId);
 
-        // Redirect or forward based on the result
         if (isRegistered) {
             response.sendRedirect("welcome.jsp?message=Registration successful");
         } else {

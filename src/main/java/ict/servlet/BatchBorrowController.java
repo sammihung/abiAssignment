@@ -1,12 +1,11 @@
 package ict.servlet;
 
-// Import the new bean
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map; // Assuming methods are here
-import java.util.logging.Level; // Still needed? Maybe not if info is in BorrowableFruitInfoBean
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ict.bean.BakeryShopBean;
@@ -22,18 +21,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-/**
- * Servlet to handle batch borrowing requests from other shops in the same city.
- * GET shows fruits with lender availability, POST submits request to one chosen
- * lender.
- */
 @WebServlet(name = "BatchBorrowController", urlPatterns = { "/batchBorrowFruit" })
 public class BatchBorrowController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(BatchBorrowController.class.getName());
     private BorrowingDB borrowingDb;
-    // private FruitDB fruitDb; // May not be needed directly if using
-    // BorrowableFruitInfoBean
     private BakeryShopDB bakeryShopDb;
 
     @Override
@@ -45,21 +37,14 @@ public class BatchBorrowController extends HttpServlet {
             throw new ServletException("Database connection parameters missing.");
         }
         borrowingDb = new BorrowingDB(dbUrl, dbUser, dbPassword);
-        // fruitDb = new FruitDB(dbUrl, dbUser, dbPassword); // Initialize if still
-        // needed elsewhere
         bakeryShopDb = new BakeryShopDB(dbUrl, dbUser, dbPassword);
         LOGGER.log(Level.INFO, "BatchBorrowController initialized.");
     }
 
-    /**
-     * Handles GET requests: Displays the batch borrowing form with lender
-     * availability.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check: Shop Staff logged in ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) ||
@@ -69,17 +54,15 @@ public class BatchBorrowController extends HttpServlet {
         }
 
         List<BorrowableFruitInfoBean> borrowableFruits = Collections.emptyList();
-        List<BakeryShopBean> potentialLenders = Collections.emptyList(); // Still need this for the dropdown
+        List<BakeryShopBean> potentialLenders = Collections.emptyList();
 
         try {
             int currentShopId = Integer.parseInt(currentUser.getShopId());
-            BakeryShopBean currentShop = bakeryShopDb.getShopById(currentShopId); // Need shop details for city
+            BakeryShopBean currentShop = bakeryShopDb.getShopById(currentShopId);
 
             if (currentShop != null && currentShop.getCity() != null) {
                 String city = currentShop.getCity();
-                // Fetch fruits including lender info for the table display
                 borrowableFruits = borrowingDb.getBorrowableFruitsWithLenderInfo(city, currentShopId);
-                // Fetch other shops in the same city for the lender selection dropdown
                 potentialLenders = borrowingDb.getOtherShopsInCity(city, currentShopId);
 
                 request.setAttribute("currentCity", city);
@@ -98,22 +81,16 @@ public class BatchBorrowController extends HttpServlet {
             request.setAttribute("errorMessage", "Error loading borrowing page.");
         }
 
-        request.setAttribute("borrowableFruits", borrowableFruits); // Pass the enhanced list
-        request.setAttribute("potentialLenders", potentialLenders); // Pass lenders for dropdown
+        request.setAttribute("borrowableFruits", borrowableFruits);
+        request.setAttribute("potentialLenders", potentialLenders);
         RequestDispatcher rd = request.getRequestDispatcher("/batchBorrowFruit.jsp");
         rd.forward(request, response);
     }
 
-    /**
-     * Handles POST requests: Processes the batch borrowing submission to a SINGLE
-     * lender.
-     * (This logic remains the same as before)
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) ||
@@ -126,7 +103,7 @@ public class BatchBorrowController extends HttpServlet {
         boolean success = false;
         List<Integer> requestedFruitIds = new ArrayList<>();
         List<Integer> requestedQuantities = new ArrayList<>();
-        String lendingShopIdStr = request.getParameter("lendingShopId"); // Get the SINGLE chosen lender
+        String lendingShopIdStr = request.getParameter("lendingShopId");
 
         try {
             int borrowingShopId = Integer.parseInt(currentUser.getShopId());
@@ -137,7 +114,6 @@ public class BatchBorrowController extends HttpServlet {
             } else {
                 lendingShopId = Integer.parseInt(lendingShopIdStr);
 
-                // --- Parse multiple fruit quantities ---
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
                     String paramName = entry.getKey();
@@ -146,7 +122,7 @@ public class BatchBorrowController extends HttpServlet {
                             String quantityStr = entry.getValue()[0];
                             if (quantityStr != null && !quantityStr.trim().isEmpty()) {
                                 int quantity = Integer.parseInt(quantityStr.trim());
-                                if (quantity > 0) { // Only add items with quantity > 0
+                                if (quantity > 0) {
                                     int fruitId = Integer.parseInt(paramName.substring("quantity_".length()));
                                     requestedFruitIds.add(fruitId);
                                     requestedQuantities.add(quantity);
@@ -156,7 +132,7 @@ public class BatchBorrowController extends HttpServlet {
                             LOGGER.log(Level.WARNING, "Invalid quantity/fruit ID format for param: " + paramName, e);
                         }
                     }
-                } // End parameter loop
+                }
 
                 if (requestedFruitIds.isEmpty()) {
                     message = "No items requested (quantity must be greater than 0).";
@@ -164,9 +140,6 @@ public class BatchBorrowController extends HttpServlet {
                     LOGGER.log(Level.INFO,
                             "Processing batch borrow request from ShopID={0} to ShopID={1} for {2} items.",
                             new Object[] { borrowingShopId, lendingShopId, requestedFruitIds.size() });
-                    // --- Call DB method to create multiple pending requests TO THE SINGLE LENDER
-                    // ---
-                    // Assumes createMultipleBorrowRequests exists and handles this
                     message = borrowingDb.createMultipleBorrowRequests(borrowingShopId, lendingShopId,
                             requestedFruitIds, requestedQuantities);
                     if (message.toLowerCase().contains("success")) {
@@ -182,7 +155,6 @@ public class BatchBorrowController extends HttpServlet {
             message = "An unexpected error occurred.";
         }
 
-        // --- Redirect back to the form page ---
         String redirectUrl = "batchBorrowFruit";
         if (success) {
             redirectUrl += "?message=" + java.net.URLEncoder.encode(message, "UTF-8");

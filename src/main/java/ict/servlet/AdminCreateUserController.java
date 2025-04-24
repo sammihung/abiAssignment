@@ -20,9 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-/**
- * Servlet for Senior Management to create new user accounts.
- */
 @WebServlet(name = "AdminCreateUserController", urlPatterns = { "/adminCreateUser" })
 public class AdminCreateUserController extends HttpServlet {
 
@@ -45,14 +42,10 @@ public class AdminCreateUserController extends HttpServlet {
         LOGGER.log(Level.INFO, "AdminCreateUserController initialized.");
     }
 
-    /**
-     * Handles GET requests: Displays the admin user creation form.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check: Only Senior Management ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Senior Management".equalsIgnoreCase(currentUser.getRole())) {
@@ -60,12 +53,11 @@ public class AdminCreateUserController extends HttpServlet {
             return;
         }
 
-        // --- Fetch data for dropdowns ---
         List<BakeryShopBean> shops = Collections.emptyList();
         List<WarehouseBean> warehouses = Collections.emptyList();
         try {
-            shops = bakeryShopDb.getBakeryShop(); // Assumes this method returns all shops
-            warehouses = warehouseDb.getAllWarehouses(); // Assumes this method exists in WarehouseDB
+            shops = bakeryShopDb.getBakeryShop();
+            warehouses = warehouseDb.getAllWarehouses();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching shops or warehouses for create user form", e);
             request.setAttribute("errorMessage", "Could not load shop/warehouse list.");
@@ -78,14 +70,10 @@ public class AdminCreateUserController extends HttpServlet {
         rd.forward(request, response);
     }
 
-    /**
-     * Handles POST requests: Processes the new user creation.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check: Only Senior Management ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Senior Management".equalsIgnoreCase(currentUser.getRole())) {
@@ -93,9 +81,8 @@ public class AdminCreateUserController extends HttpServlet {
             return;
         }
 
-        // --- Get Parameters ---
         String username = request.getParameter("username");
-        String password = request.getParameter("password"); // Plain text - BAD! Hash this.
+        String password = request.getParameter("password");
         String email = request.getParameter("email");
         String role = request.getParameter("role");
         String shopId = request.getParameter("shopId");
@@ -104,38 +91,27 @@ public class AdminCreateUserController extends HttpServlet {
         String message = "User creation failed.";
         boolean success = false;
 
-        // --- Basic Validation ---
         if (username == null || username.trim().isEmpty() ||
-                password == null || password.trim().isEmpty() || // Ensure password isn't empty
+                password == null || password.trim().isEmpty() ||
                 email == null || email.trim().isEmpty() ||
                 role == null || role.trim().isEmpty()) {
             message = "Username, Password, Email, and Role are required.";
         } else {
-            // Role specific validation: Shop staff need shopId, Warehouse staff need
-            // warehouseId
             if (AuthFilter.ROLE_BAKERY_SHOP_STAFF.equals(role) && (shopId == null || shopId.trim().isEmpty())) {
                 message = "Shop Staff must be assigned to a Shop ID.";
             } else if (AuthFilter.ROLE_WAREHOUSE_STAFF.equals(role)
                     && (warehouseId == null || warehouseId.trim().isEmpty())) {
                 message = "Warehouse Staff must be assigned to a Warehouse ID.";
             } else {
-                // Clear irrelevant ID based on role
                 if (AuthFilter.ROLE_BAKERY_SHOP_STAFF.equals(role)) {
-                    warehouseId = null; // Shop staff shouldn't have warehouse ID
+                    warehouseId = null;
                 } else if (AuthFilter.ROLE_WAREHOUSE_STAFF.equals(role)) {
-                    shopId = null; // Warehouse staff shouldn't have shop ID
+                    shopId = null;
                 } else if (AuthFilter.ROLE_SENIOR_MANAGEMENT.equals(role)) {
-                    shopId = null; // Management might not be tied to one location
+                    shopId = null;
                     warehouseId = null;
                 }
 
-                // --- Call DB to add user ---
-                // **SECURITY:** You MUST hash the password before calling addUser
-                // String hashedPassword = YourPasswordHasher.hash(password);
-                // success = userDb.addUser(username, hashedPassword, email, role, shopId,
-                // warehouseId);
-
-                // Using plain text password for now (BAD PRACTICE!)
                 success = userDb.addUser(username, password, email, role, shopId, warehouseId);
 
                 if (success) {
@@ -146,19 +122,16 @@ public class AdminCreateUserController extends HttpServlet {
             }
         }
 
-        // --- Redirect back to user list or create page ---
         if (success) {
             response.sendRedirect("listUsers?message=" + java.net.URLEncoder.encode(message, "UTF-8"));
         } else {
-            // Set attributes to re-populate form on error and forward back
             request.setAttribute("errorMessage", message);
             request.setAttribute("prevUsername", username);
             request.setAttribute("prevEmail", email);
             request.setAttribute("prevRole", role);
             request.setAttribute("prevShopId", shopId);
             request.setAttribute("prevWarehouseId", warehouseId);
-            // Re-fetch dropdown data for the form
-            doGet(request, response); // Re-run doGet to fetch lists and forward
+            doGet(request, response);
         }
     }
 

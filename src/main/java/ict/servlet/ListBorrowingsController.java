@@ -1,9 +1,14 @@
 package ict.servlet;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import ict.bean.BorrowingBean;
 import ict.bean.UserBean;
-import ict.db.BorrowingDB; // Assuming methods are here
-
+import ict.db.BorrowingDB;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,16 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-/**
- * Servlet to list borrowing records based on user role.
- */
-@WebServlet(name = "ListBorrowingsController", urlPatterns = {"/listBorrowings"})
+@WebServlet(name = "ListBorrowingsController", urlPatterns = { "/listBorrowings" })
 public class ListBorrowingsController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ListBorrowingsController.class.getName());
@@ -58,21 +54,19 @@ public class ListBorrowingsController extends HttpServlet {
         try {
             if ("Senior Management".equalsIgnoreCase(userRole)) {
                 listTitle = "All Borrowing Records";
-                borrowingList = borrowingDb.getAllBorrowings(); // Fetch all
+                borrowingList = borrowingDb.getAllBorrowings();
             } else if ("Bakery shop staff".equalsIgnoreCase(userRole) && currentUser.getShopId() != null) {
-                 listTitle = "My Shop's Borrowing Records";
-                 int shopId = Integer.parseInt(currentUser.getShopId());
-                 borrowingList = borrowingDb.getAllBorrowingsForShop(shopId); // Fetch for specific shop
-            }
-            // Warehouse staff currently don't see borrowing records unless logic changes
-            else {
-                 LOGGER.log(Level.INFO, "User role ({0}) does not have access to borrowing list.", userRole);
-                 request.setAttribute("errorMessage", "Your role does not have access to view borrowing records.");
+                listTitle = "My Shop's Borrowing Records";
+                int shopId = Integer.parseInt(currentUser.getShopId());
+                borrowingList = borrowingDb.getAllBorrowingsForShop(shopId);
+            } else {
+                LOGGER.log(Level.INFO, "User role ({0}) does not have access to borrowing list.", userRole);
+                request.setAttribute("errorMessage", "Your role does not have access to view borrowing records.");
             }
 
         } catch (NumberFormatException e) {
-             LOGGER.log(Level.SEVERE, "Invalid Shop ID format for user: " + currentUser.getUsername(), e);
-             request.setAttribute("errorMessage", "Invalid user profile (Shop ID).");
+            LOGGER.log(Level.SEVERE, "Invalid Shop ID format for user: " + currentUser.getUsername(), e);
+            request.setAttribute("errorMessage", "Invalid user profile (Shop ID).");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching borrowing records.", e);
             request.setAttribute("errorMessage", "Error retrieving borrowing data.");
@@ -83,8 +77,6 @@ public class ListBorrowingsController extends HttpServlet {
         RequestDispatcher rd = request.getRequestDispatcher("/listBorrowings.jsp");
         rd.forward(request, response);
     }
-    
-    
 
     @Override
     public String getServletInfo() {

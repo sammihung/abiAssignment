@@ -1,9 +1,15 @@
 package ict.servlet;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import ict.bean.OrderableFruitBean;
 import ict.bean.UserBean;
-import ict.db.BorrowingDB; // Assuming new methods are here
-
+import ict.db.BorrowingDB;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,21 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-/**
- * Servlet to handle ordering multiple fruits from source warehouses.
- */
 @WebServlet(name = "OrderFromSourceController", urlPatterns = { "/orderFromSource" })
 public class OrderFromSourceController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(OrderFromSourceController.class.getName());
-    private BorrowingDB borrowingDb; // Contains order methods
+    private BorrowingDB borrowingDb;
 
     @Override
     public void init() throws ServletException {
@@ -40,14 +36,10 @@ public class OrderFromSourceController extends HttpServlet {
         LOGGER.log(Level.INFO, "OrderFromSourceController initialized.");
     }
 
-    /**
-     * Handles GET requests: Displays the multi-item order form.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check: Shop Staff logged in ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) ||
@@ -57,7 +49,6 @@ public class OrderFromSourceController extends HttpServlet {
         }
 
         try {
-            // Fetch list of fruits available for ordering from source
             List<OrderableFruitBean> orderableFruits = borrowingDb.getOrderableFruitsFromSource();
             request.setAttribute("orderableFruits", orderableFruits);
             LOGGER.log(Level.INFO, "Fetched {0} orderable fruits.", orderableFruits.size());
@@ -67,19 +58,14 @@ public class OrderFromSourceController extends HttpServlet {
             request.setAttribute("errorMessage", "Error loading order page.");
         }
 
-        // Forward to the JSP page
         RequestDispatcher rd = request.getRequestDispatcher("/orderFromSource.jsp");
         rd.forward(request, response);
     }
 
-    /**
-     * Handles POST requests: Processes the batch order submission.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Security Check ---
         HttpSession session = request.getSession(false);
         UserBean currentUser = (session != null) ? (UserBean) session.getAttribute("userInfo") : null;
         if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) ||
@@ -96,8 +82,6 @@ public class OrderFromSourceController extends HttpServlet {
         try {
             int shopId = Integer.parseInt(currentUser.getShopId());
 
-            // --- Parse multiple fruit quantities from the form ---
-            // Assumes form inputs are named "quantity_<fruitId>"
             Map<String, String[]> parameterMap = request.getParameterMap();
             for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
                 String paramName = entry.getKey();
@@ -106,7 +90,7 @@ public class OrderFromSourceController extends HttpServlet {
                         String quantityStr = entry.getValue()[0];
                         if (quantityStr != null && !quantityStr.trim().isEmpty()) {
                             int quantity = Integer.parseInt(quantityStr.trim());
-                            if (quantity > 0) { // Only add items with quantity > 0
+                            if (quantity > 0) {
                                 int fruitId = Integer.parseInt(paramName.substring("quantity_".length()));
                                 orderedFruitIds.add(fruitId);
                                 orderedQuantities.add(quantity);
@@ -116,7 +100,6 @@ public class OrderFromSourceController extends HttpServlet {
                         }
                     } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                         LOGGER.log(Level.WARNING, "Invalid quantity or fruit ID format for parameter: " + paramName, e);
-                        // Skip this item or handle error more strictly
                     }
                 }
             }
@@ -126,7 +109,6 @@ public class OrderFromSourceController extends HttpServlet {
             } else {
                 LOGGER.log(Level.INFO, "Processing order for ShopID={0} with {1} items.",
                         new Object[] { shopId, orderedFruitIds.size() });
-                // --- Call the DB method to process the batch ---
                 message = borrowingDb.createMultipleReservations(shopId, orderedFruitIds, orderedQuantities);
                 if (message.toLowerCase().contains("success")) {
                     success = true;
@@ -141,14 +123,11 @@ public class OrderFromSourceController extends HttpServlet {
             message = "An unexpected error occurred while submitting your order.";
         }
 
-        // --- Redirect back to the order form page with a status message ---
-        String redirectUrl = "orderFromSource"; // Relative URL to self (doGet)
+        String redirectUrl = "orderFromSource";
         if (success) {
             redirectUrl += "?message=" + java.net.URLEncoder.encode(message, "UTF-8");
         } else {
             redirectUrl += "?error=" + java.net.URLEncoder.encode(message, "UTF-8");
-            // Note: Retaining quantities on error is complex with batch forms,
-            // usually just show the error and let user refill.
         }
         response.sendRedirect(redirectUrl);
     }

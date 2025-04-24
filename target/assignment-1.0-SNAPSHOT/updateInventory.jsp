@@ -34,10 +34,6 @@
     </style>
 </head>
 <body>
-    <%-- Optional: Include header --%>
-    <%-- <jsp:include page="header.jsp" /> --%>
-
-    <%-- Basic login check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || currentUser.getShopId() == null) {
@@ -49,27 +45,22 @@
     <div class="container">
         <h1>Update Shop Inventory</h1>
 
-        <%-- Display Messages/Errors from Redirect --%>
         <c:if test="${not empty param.message}">
             <div class="message"><c:out value="${param.message}" /></div>
         </c:if>
         <c:if test="${not empty param.error}">
             <div class="error-message"><c:out value="${param.error}" /></div>
         </c:if>
-         <%-- Display Errors from Forward (e.g., page load error) --%>
          <c:if test="${not empty errorMessage}">
             <div class="error-message"><c:out value="${errorMessage}" /></div>
         </c:if>
 
-        <%-- Section 1: Display Current Inventory --%>
         <h2>Current Stock Levels</h2>
         <table id="inventoryTable" class="display">
             <thead>
                 <tr>
                     <th>Fruit Name</th>
                     <th>Current Quantity</th>
-                    <%-- Optional: Add Inventory ID if needed --%>
-                    <%-- <th>Inv. ID</th> --%>
                 </tr>
             </thead>
             <tbody>
@@ -77,19 +68,16 @@
                     <tr>
                         <td><c:out value="${item.fruitName}"/></td>
                         <td><c:out value="${item.quantity}"/></td>
-                        <%-- <td><c:out value="${item.inventoryId}"/></td> --%>
                     </tr>
                 </c:forEach>
                 <c:if test="${empty inventoryList}">
                     <tr>
                         <td colspan="2">No inventory records found for this shop.</td>
-                         <%-- Adjust colspan if more columns added --%>
                     </tr>
                 </c:if>
             </tbody>
         </table>
 
-        <%-- Section 2: Form to Update/Add Inventory --%>
         <h2>Set Inventory Level</h2>
         <div class="update-form">
             <form action="<c:url value='/updateInventory'/>" method="POST">
@@ -117,16 +105,11 @@
     </div>
 
     <script>
-        // Initialize DataTables for the inventory table
         $(document).ready( function () {
             $('#inventoryTable').DataTable({
-                // Optional configurations
-                 "order": [[ 0, "asc" ]] // Sort by fruit name ascending
+                 "order": [[ 0, "asc" ]]
             });
         });
     </script>
-
-    <%-- Optional: Include footer --%>
-    <%-- <jsp:include page="footer.jsp" /> --%>
 </body>
 </html>

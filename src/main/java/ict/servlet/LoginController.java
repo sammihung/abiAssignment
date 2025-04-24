@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "LoginController", urlPatterns = {"/login", "/logout"})
+@WebServlet(name = "LoginController", urlPatterns = { "/login", "/logout" })
 public class LoginController extends HttpServlet {
 
     private UserDB db;
@@ -45,7 +45,6 @@ public class LoginController extends HttpServlet {
                 if (db.isValidUser(username, password)) {
                     HttpSession session = request.getSession();
                     UserBean bean = db.getUser(username, password);
-                    System.out.println(bean);
                     session.setAttribute("userInfo", bean);
                     targetURL = "/welcome.jsp";
                 } else {

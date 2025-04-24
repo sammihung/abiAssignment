@@ -30,19 +30,15 @@ public class DeleteUsersController extends HttpServlet {
         response.setContentType("application/json");
 
         try {
-            // Parse the JSON request body manually
             StringBuilder jsonBuffer = new StringBuilder();
             String line;
             while ((line = request.getReader().readLine()) != null) {
                 jsonBuffer.append(line);
             }
             String json = jsonBuffer.toString();
-            System.out.println("Received JSON: " + json); // 添加日誌
 
-            // Extract user IDs from the JSON string
             List<Integer> userIds = parseUserIds(json);
 
-            // Delete users from the database
             boolean allDeleted = true;
             for (int userId : userIds) {
                 if (!db.deleteUserInfo(userId)) {
@@ -51,7 +47,6 @@ public class DeleteUsersController extends HttpServlet {
                 }
             }
 
-            // Construct JSON response manually
             String jsonResponse = constructJsonResponse(allDeleted,
                     allDeleted ? "Users deleted successfully." : "Failed to delete some users.");
             response.getWriter().write(jsonResponse);
@@ -66,16 +61,14 @@ public class DeleteUsersController extends HttpServlet {
         List<Integer> userIds = new ArrayList<>();
         json = json.trim();
         if (json.startsWith("{") && json.endsWith("}")) {
-            // Extract the "userIds" array from the JSON object
             int startIndex = json.indexOf("[");
             int endIndex = json.indexOf("]");
             if (startIndex != -1 && endIndex != -1) {
-                String arrayContent = json.substring(startIndex + 1, endIndex); // Extract array content
+                String arrayContent = json.substring(startIndex + 1, endIndex);
                 String[] ids = arrayContent.split(",");
                 for (String id : ids) {
                     try {
-                        userIds.add(Integer.parseInt(id.trim().replaceAll("^\"|\"$", ""))); // Remove quotes and parse
-                                                                                            // as integer
+                        userIds.add(Integer.parseInt(id.trim().replaceAll("^\"|\"$", "")));
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
