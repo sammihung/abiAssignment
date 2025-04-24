@@ -63,8 +63,6 @@
                     editing.</p>
             </c:if>
 
-            <a href="<c:url value='/listFruits'/>" class="back-link">Back to
-                Fruit List</a>
 
         </div>
 

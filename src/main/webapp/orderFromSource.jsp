@@ -5,16 +5,14 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Order Fruits From Source</title>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <link rel="stylesheet" type="text/css"
-            href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-        <script type="text/javascript" charset="utf8"
-            src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Fruits From Source</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <style>
         body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
         h1 { color: #333; text-align: center; }
@@ -33,94 +31,71 @@
         .low-stock { color: orange; font-weight: bold; }
         .no-stock { color: red; font-weight: bold; }
     </style>
-    </head>
-    <body>
+</head>
+<body>
 
-        <%
+    <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
-        if (currentUser == null ||
-        !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) ||
-        currentUser.getShopId() == null) {
-        response.sendRedirect(request.getContextPath() +
-        "/login.jsp?error=ShopStaffLoginRequired");
-        return;
+        if (currentUser == null || !"Bakery shop staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getShopId() == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?error=ShopStaffLoginRequired");
+            return;
         }
-        %>
+    %>
 
-        <div class="container">
-            <h1>Order Fruits From Source</h1>
-            <p>Enter the quantity you wish to reserve for each fruit. Stock
-                levels shown are at the primary source warehouse.</p>
+    <div class="container">
+        <h1>Order Fruits From Source</h1>
+        <p>Enter the quantity you wish to reserve for each fruit. Stock levels shown are at the primary source warehouse.</p>
 
-            <c:if test="${not empty param.message}"> <div class="message"><c:out
-                        value="${param.message}" /></div> </c:if>
-            <c:if test="${not empty param.error}"> <div
-                    class="error-message"><c:out value="${param.error}" /></div>
-            </c:if>
-            <c:if test="${not empty errorMessage}"> <div
-                    class="error-message"><c:out
-                        value="${errorMessage}" /></div> </c:if>
+        <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
+        <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
+        <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
 
-            <form action="<c:url value='/orderFromSource'/>" method="POST">
-                <table id="orderTable" class="display">
-                    <thead>
+        <form action="<c:url value='/orderFromSource'/>" method="POST">
+            <table id="orderTable" class="display">
+                <thead>
+                    <tr>
+                        <th>Fruit Name</th>
+                        <th>Source Country</th>
+                        <th>Available Qty (Source)</th>
+                        <th>Order Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="fruit" items="${orderableFruits}">
                         <tr>
-                            <th>Fruit Name</th>
-                            <th>Source Country</th>
-                            <th>Available Qty (Source)</th>
-                            <th>Order Quantity</th>
+                            <td><c:out value="${fruit.fruitName}"/> (ID: <c:out value="${fruit.fruitId}"/>)</td>
+                            <td><c:out value="${fruit.sourceCountry}"/></td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${fruit.availableSourceQuantity <= 0}">
+                                        <span class="no-stock">0</span>
+                                    </c:when>
+                                    <c:when test="${fruit.availableSourceQuantity < 10}"> 
+                                        <span class="low-stock"><c:out value="${fruit.availableSourceQuantity}"/></span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:out value="${fruit.availableSourceQuantity}"/>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <input type="number" name="quantity_${fruit.fruitId}" min="0" value="0"
+                                       ${fruit.availableSourceQuantity <= 0 ? 'disabled' : ''}> 
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <c:foreach var="fruit" items="${orderableFruits}">
-                            <tr>
-                                <td><c:out value="${fruit.fruitName}" /> (ID:
-                                    <c:out value="${fruit.fruitId}" />)</td>
-                                <td><c:out
-                                        value="${fruit.sourceCountry}" /></td>
-                                <td>
+                    </c:forEach>
+                    <c:if test="${empty orderableFruits && empty errorMessage}">
+                        <tr>
+                            <td colspan="4">No fruits available for ordering.</td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
 
-                                    <c:choose>
-                                        <c:when
-                                            test="${fruit.availableSourceQuantity <= 0}">
-                                            <span class="no-stock">0</span>
-                                        </c:when>
-                                        <c:when
-                                            test="${fruit.availableSourceQuantity < 10}">
-                                            <span class="low-stock"><c:out
-                                                    value="${fruit.availableSourceQuantity}" /></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <c:out
-                                                value="${fruit.availableSourceQuantity}" />
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-
-                                    <input type="number"
-                                        name="quantity_${fruit.fruitId}" min="0"
-                                        value="0"
-                                        ${fruit.availableSourceQuantity <=0 ?
-                                        'disabled' : ''}>
-                                </td>
-                            </tr>
-                        </c:foreach>
-                        <c:if
-                            test="${empty orderableFruits && empty errorMessage}">
-                            <tr>
-                                <td colspan="4">No fruits available for
-                                    ordering.</td>
-                            </tr>
-                        </c:if>
-                    </tbody>
-                </table>
-
-                <button type="submit" class="submit-button">Submit
-                    Order</button>
-            </form>
-        </div>
-        <script>
+            <button type="submit" class="submit-button">Submit Order</button>
+        </form>
+    </div>
+    <script>
         $(document).ready( function () {
             $('#orderTable').DataTable({
                 "paging": false, 
@@ -129,5 +104,5 @@
         });
     </script>
 
-    </body>
+</body>
 </html>
