@@ -3,7 +3,7 @@ package ict.bean;
 import java.io.Serializable;
 
 /**
- * Represents an inventory entity based on the 'inventory' table.
+ * Represents an inventory item, potentially in a shop or warehouse.
  */
 public class InventoryBean implements Serializable {
 
@@ -13,24 +13,16 @@ public class InventoryBean implements Serializable {
     private Integer warehouseId; // Use Integer to allow null
     private int quantity;
 
-     // Optional: Add fields to hold related object details
+    // Additional fields for display purposes
     private String fruitName;
-    private String locationName; // Could be shop name or warehouse name
+    private String locationName; // e.g., Shop Name or Warehouse Name
+    private String sourceCountry; // ADDED: To store fruit's source country
 
     // Default constructor
     public InventoryBean() {
     }
 
-    // Constructor with all fields
-    public InventoryBean(int inventoryId, int fruitId, Integer shopId, Integer warehouseId, int quantity) {
-        this.inventoryId = inventoryId;
-        this.fruitId = fruitId;
-        this.shopId = shopId;
-        this.warehouseId = warehouseId;
-        this.quantity = quantity;
-    }
-
-    // Getters and Setters...
+    // Getters and Setters for all fields...
 
     public int getInventoryId() {
         return inventoryId;
@@ -72,7 +64,7 @@ public class InventoryBean implements Serializable {
         this.quantity = quantity;
     }
 
-     public String getFruitName() {
+    public String getFruitName() {
         return fruitName;
     }
 
@@ -88,6 +80,15 @@ public class InventoryBean implements Serializable {
         this.locationName = locationName;
     }
 
+    // ADDED: Getter and Setter for sourceCountry
+    public String getSourceCountry() {
+        return sourceCountry;
+    }
+
+    public void setSourceCountry(String sourceCountry) {
+        this.sourceCountry = sourceCountry;
+    }
+
     @Override
     public String toString() {
         return "InventoryBean{" +
@@ -96,6 +97,9 @@ public class InventoryBean implements Serializable {
                 ", shopId=" + shopId +
                 ", warehouseId=" + warehouseId +
                 ", quantity=" + quantity +
+                ", fruitName='" + fruitName + '\'' +
+                ", locationName='" + locationName + '\'' +
+                ", sourceCountry='" + sourceCountry + '\'' + // Added to toString
                 '}';
     }
 }

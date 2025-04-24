@@ -13,15 +13,6 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
-        html, body {
-            margin: 0;
-        }
-
-        .menu-bar {
-            margin: 0;
-            padding: 0;
-        }
-
         body { font-family: sans-serif; margin: 0px; background-color: #f4f4f4; }
         .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
         h1, h2 { color: #333; text-align: center; }
@@ -44,6 +35,7 @@
 </head>
 <body>
 
+    <%-- Basic login & role check --%>
     <%
         UserBean currentUser = (UserBean) session.getAttribute("userInfo");
         if (currentUser == null || !"Warehouse Staff".equalsIgnoreCase(currentUser.getRole()) || currentUser.getWarehouseId() == null) {
@@ -55,21 +47,18 @@
     <div class="container">
         <h1>Update Warehouse Inventory (Warehouse ID: <c:out value="${userInfo.warehouseId}"/>)</h1>
 
-        <c:if test="${not empty param.message}">
-            <div class="message"><c:out value="${param.message}" /></div>
-        </c:if>
-        <c:if test="${not empty param.error}">
-            <div class="error-message"><c:out value="${param.error}" /></div>
-        </c:if>
-         <c:if test="${not empty errorMessage}">
-            <div class="error-message"><c:out value="${errorMessage}" /></div>
-        </c:if>
+        <%-- Display Messages/Errors --%>
+        <c:if test="${not empty param.message}"> <div class="message"><c:out value="${param.message}" /></div> </c:if>
+        <c:if test="${not empty param.error}"> <div class="error-message"><c:out value="${param.error}" /></div> </c:if>
+        <c:if test="${not empty errorMessage}"> <div class="error-message"><c:out value="${errorMessage}" /></div> </c:if>
 
+        <%-- Section 1: Display Current Inventory --%>
         <h2>Current Stock Levels</h2>
         <table id="inventoryTable" class="display">
             <thead>
                 <tr>
                     <th>Fruit Name</th>
+                    <th>Source Country</th> <%-- ADDED HEADER --%>
                     <th>Current Quantity</th>
                 </tr>
             </thead>
@@ -77,17 +66,19 @@
                 <c:forEach var="item" items="${inventoryList}">
                     <tr>
                         <td><c:out value="${item.fruitName}"/></td>
+                        <td><c:out value="${item.sourceCountry}"/></td> <%-- ADDED DATA CELL --%>
                         <td><c:out value="${item.quantity}"/></td>
                     </tr>
                 </c:forEach>
                 <c:if test="${empty inventoryList}">
                     <tr>
-                        <td colspan="2">No inventory records found for this warehouse.</td>
+                        <td colspan="3">No inventory records found for this warehouse.</td> <%-- Updated colspan --%>
                     </tr>
                 </c:if>
             </tbody>
         </table>
 
+        <%-- Section 2: Form to Update/Add Inventory --%>
         <h2>Set Inventory Level (Check-in / Adjustment)</h2>
         <div class="update-form">
             <form action="<c:url value='/updateWarehouseInventory'/>" method="POST">
@@ -115,9 +106,10 @@
     </div>
 
     <script>
+        // Initialize DataTables for the inventory table
         $(document).ready( function () {
             $('#inventoryTable').DataTable({
-                 "order": [[ 0, "asc" ]]
+                 "order": [[ 0, "asc" ]] // Sort by fruit name ascending
             });
         });
     </script>

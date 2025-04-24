@@ -500,16 +500,25 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
         }
         return success;
     }
+    // In BorrowingDB.java
 
-    // ========================================================================
-    // Warehouse Inventory Update Methods (from previous steps)
-    // ========================================================================
-
+    /**
+     * Retrieves the current inventory for a specific warehouse, including fruit
+     * names and source country.
+     * Assumes warehouse inventory has shop_id set to NULL.
+     *
+     * @param warehouseId The ID of the warehouse.
+     * @return A List of InventoryBean objects with fruit details populated.
+     */
     public List<InventoryBean> getInventoryForWarehouse(int warehouseId) {
         List<InventoryBean> inventoryList = new ArrayList<>();
-        String sql = "SELECT i.inventory_id, i.fruit_id, i.shop_id, i.warehouse_id, i.quantity, f.fruit_name " +
-                "FROM inventory i JOIN fruits f ON i.fruit_id = f.fruit_id " +
-                "WHERE i.warehouse_id = ? AND i.shop_id IS NULL ORDER BY f.fruit_name";
+        // MODIFIED SQL: Added f.source_country
+        String sql = "SELECT i.inventory_id, i.fruit_id, i.shop_id, i.warehouse_id, i.quantity, f.fruit_name, f.source_country "
+                +
+                "FROM inventory i " +
+                "JOIN fruits f ON i.fruit_id = f.fruit_id " +
+                "WHERE i.warehouse_id = ? AND i.shop_id IS NULL " + // Filter for specific warehouse, NULL shop
+                "ORDER BY f.fruit_name";
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -526,10 +535,16 @@ public class BorrowingDB { // Renamed from ReservationDB if this is the primary 
                 item.setWarehouseId(rs.getInt("warehouse_id"));
                 item.setQuantity(rs.getInt("quantity"));
                 item.setFruitName(rs.getString("fruit_name"));
+                item.setSourceCountry(rs.getString("source_country")); // ADDED: Set source country
+                // Set locationName if needed (e.g., warehouse name)
+                // item.setLocationName(warehouseDb.getWarehouseById(warehouseId).getWarehouse_name());
+                // // Requires WarehouseDB access
                 inventoryList.add(item);
             }
+            LOGGER.log(Level.INFO, "Fetched {0} inventory items for WarehouseID={1}",
+                    new Object[] { inventoryList.size(), warehouseId });
         } catch (SQLException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching warehouse inventory " + warehouseId, e);
+            LOGGER.log(Level.SEVERE, "Error fetching inventory for warehouse " + warehouseId, e);
         } finally {
             closeQuietly(rs);
             closeQuietly(ps);
